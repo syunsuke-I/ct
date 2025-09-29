@@ -19,7 +19,7 @@
       ]
     },
     {
-      "source": "/workbox-*.js",
+      "source": "/workbox-:hash.js",
       "headers": [
         {
           "key": "Cache-Control",
@@ -28,7 +28,7 @@
       ]
     },
     {
-      "source": "/(.*).png",
+      "source": "/:path*.png",
       "headers": [
         {
           "key": "Cache-Control",
