@@ -73,6 +73,23 @@ const CHORD_TONES = {
 
 const TONE_NAMES = ["3rd", "5th", "7th"]
 
+// コード名を整形する関数（bや#を上付き文字にする）
+const formatChordName = (chord: string) => {
+  // ルート音とそれ以降を分離
+  const match = chord.match(/^([A-G])([b#]?)(.*)$/)
+  if (!match) return chord
+
+  const [, root, accidental, suffix] = match
+
+  return (
+    <>
+      {root}
+      {accidental && <sup className="text-[0.6em]">{accidental}</sup>}
+      {suffix}
+    </>
+  )
+}
+
 type Question = {
   chord: string
   tonePosition: number
@@ -402,13 +419,13 @@ export function MusicPracticeApp() {
                 {stats.incorrectAnswers.map((result, index) => (
                   <div key={index} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg text-sm">
                     <div>
-                      <span className="font-mono font-semibold">{result.question.chord}</span>
+                      <span className="font-mono font-semibold">{formatChordName(result.question.chord)}</span>
                       <span className="text-muted-foreground ml-2">の{result.question.toneName}</span>
                       <span className="text-muted-foreground ml-2">({(result.responseTime / 1000).toFixed(1)}秒)</span>
                     </div>
-                    <div className="text-right">
-                      <div className="text-red-600">あなたの回答: {result.userAnswer}</div>
-                      <div className="text-green-600">正解: {result.question.answer}</div>
+                    <div className="text-right font-mono">
+                      <div className="text-red-600">あなたの回答: {formatChordName(result.userAnswer)}</div>
+                      <div className="text-green-600">正解: {formatChordName(result.question.answer)}</div>
                     </div>
                   </div>
                 ))}
@@ -457,7 +474,7 @@ export function MusicPracticeApp() {
         {/* 問題 */}
         <div className="text-center mb-8">
           <div className="mb-6">
-            <div className="text-4xl font-bold mb-2 font-mono">{currentQuestion.chord}</div>
+            <div className="text-4xl font-bold mb-2 font-mono">{formatChordName(currentQuestion.chord)}</div>
             <p className="text-lg text-muted-foreground">の{currentQuestion.toneName}は？</p>
           </div>
 
@@ -488,7 +505,7 @@ export function MusicPracticeApp() {
                     : ""
               }`}
             >
-              {option}
+              {formatChordName(option)}
             </Button>
           ))}
         </div>
