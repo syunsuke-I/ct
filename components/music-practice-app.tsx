@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { toast } from "sonner"
 import { Toaster } from "@/components/ui/sonner"
-import { Music, RotateCcw, Trophy, TrendingUp, AlertCircle } from "lucide-react"
+import { Music, RotateCcw, Trophy, TrendingUp, AlertCircle, Clock } from "lucide-react"
 import { saveSessionData, type SessionData } from "@/lib/storage"
 
 const CHORD_TONES = {
@@ -99,6 +99,8 @@ export function MusicPracticeApp() {
   const [questions, setQuestions] = useState<Question[]>([])
   const [results, setResults] = useState<QuestionResult[]>([])
   const [sessionId] = useState(() => `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`)
+  const [elapsedTime, setElapsedTime] = useState(0)
+  const [answeredTime, setAnsweredTime] = useState<number | null>(null)
 
   // 選択肢を生成する関数
   const generateOptions = (correctAnswer: string): string[] => {
@@ -143,13 +145,16 @@ export function MusicPracticeApp() {
   const startNewSession = () => {
     const newQuestions = Array.from({ length: 10 }, () => generateQuestion())
     setQuestions(newQuestions)
-    setCurrentQuestion(newQuestions[0])
+    const firstQuestion = { ...newQuestions[0], startTime: Date.now() }
+    setCurrentQuestion(firstQuestion)
     setQuestionNumber(1)
     setScore(0)
     setSelectedAnswer("")
     setShowResult(false)
     setIsComplete(false)
     setResults([])
+    setElapsedTime(0)
+    setAnsweredTime(null)
   }
 
   // 答えを確認
@@ -158,6 +163,7 @@ export function MusicPracticeApp() {
 
     const isCorrect = selectedAnswer === currentQuestion.answer
     const responseTime = Date.now() - currentQuestion.startTime
+    setAnsweredTime(responseTime)
     setShowResult(true)
 
     const result: QuestionResult = {
@@ -188,10 +194,13 @@ export function MusicPracticeApp() {
 
     setTimeout(() => {
       if (questionNumber < 10) {
-        setCurrentQuestion(questions[questionNumber])
+        const nextQuestion = { ...questions[questionNumber], startTime: Date.now() }
+        setCurrentQuestion(nextQuestion)
         setQuestionNumber(questionNumber + 1)
         setSelectedAnswer("")
         setShowResult(false)
+        setElapsedTime(0)
+        setAnsweredTime(null)
       } else {
         const sessionData: SessionData = {
           id: sessionId,
@@ -257,6 +266,19 @@ export function MusicPracticeApp() {
     if (percentage >= 50) return "基礎は身についています。苦手な部分を重点的に練習しましょう。"
     return "基礎から復習することをお勧めします。焦らず一歩ずつ進めましょう。"
   }
+
+  // リアルタイム経過時間更新
+  useEffect(() => {
+    if (!currentQuestion || showResult) {
+      return
+    }
+
+    const timer = setInterval(() => {
+      setElapsedTime(Date.now() - currentQuestion.startTime)
+    }, 100)
+
+    return () => clearInterval(timer)
+  }, [currentQuestion, showResult])
 
   // 初期化
   useEffect(() => {
@@ -437,6 +459,16 @@ export function MusicPracticeApp() {
           <div className="mb-6">
             <div className="text-4xl font-bold mb-2 font-mono">{currentQuestion.chord}</div>
             <p className="text-lg text-muted-foreground">の{currentQuestion.toneName}は？</p>
+          </div>
+
+          {/* 時間表示 */}
+          <div className="flex items-center justify-center gap-2 text-sm">
+            <Clock className="w-4 h-4 text-muted-foreground" />
+            <span className={`font-mono ${showResult ? "text-muted-foreground" : "text-foreground font-semibold"}`}>
+              {showResult && answeredTime !== null
+                ? `${(answeredTime / 1000).toFixed(1)}秒`
+                : `${(elapsedTime / 1000).toFixed(1)}秒`}
+            </span>
           </div>
         </div>
 
