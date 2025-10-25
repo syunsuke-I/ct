@@ -211,7 +211,7 @@ export const getTopWeaknesses = (type: "chord" | "root" | "interval", limit = 5)
   })
 
   return Object.entries(weaknesses)
-    .filter(([_, data]) => data.total >= 3) // 最低3回は出題されたもののみ
+    .filter(([, data]) => data.total >= 3) // 最低3回は出題されたもののみ
     .map(([key, data]) => ({
       name: key,
       accuracy: (data.correct / data.total) * 100,
@@ -266,7 +266,7 @@ export const getChordTypeWeaknesses = () => {
   })
 
   return Object.entries(typeStats)
-    .filter(([_, data]) => data.total >= 3) // 最低3回は出題されたもののみ
+    .filter(([, data]) => data.total >= 3) // 最低3回は出題されたもののみ
     .map(([type, data]) => ({
       name: type,
       accuracy: (data.correct / data.total) * 100,
@@ -443,4 +443,46 @@ export const clearAllData = () => {
   } catch (error) {
     console.error("❌ データのクリアに失敗しました:", error)
   }
+}
+
+// カレンダーヒートマップ用のデータを取得（過去90日）
+export const getHeatmapData = () => {
+  const stats = getStoredData()
+  const today = new Date()
+  const heatmapData: Array<{
+    date: string
+    dateObj: Date
+    sessions: number
+    accuracy: number
+    totalQuestions: number
+    correctAnswers: number
+  }> = []
+
+  // 過去90日分のデータを生成
+  for (let i = 89; i >= 0; i--) {
+    const date = new Date(today)
+    date.setDate(date.getDate() - i)
+    const dateString = date.toISOString().split("T")[0]
+
+    // その日のセッションを取得
+    const daySessions = stats.sessions.filter((session) => {
+      const sessionDate = new Date(session.date).toISOString().split("T")[0]
+      return sessionDate === dateString
+    })
+
+    const totalQuestions = daySessions.reduce((sum, s) => sum + s.totalQuestions, 0)
+    const correctAnswers = daySessions.reduce((sum, s) => sum + s.score, 0)
+    const accuracy = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0
+
+    heatmapData.push({
+      date: dateString,
+      dateObj: date,
+      sessions: daySessions.length,
+      accuracy,
+      totalQuestions,
+      correctAnswers,
+    })
+  }
+
+  return heatmapData
 }

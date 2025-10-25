@@ -22,7 +22,7 @@ import {
   Music,
   X,
 } from "lucide-react"
-import { getStoredData, getWeeklyActivityData, getTopWeaknesses, getChordTypeWeaknesses, loadMockData, clearAllData, type UserStats } from "@/lib/storage"
+import { getStoredData, getWeeklyActivityData, getTopWeaknesses, getChordTypeWeaknesses, getHeatmapData, loadMockData, clearAllData, type UserStats } from "@/lib/storage"
 
 const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))"]
 
@@ -33,14 +33,17 @@ interface AnalyticsDashboardProps {
 export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
   const [stats, setStats] = useState<UserStats | null>(null)
   const [weeklyData, setWeeklyData] = useState<Array<{ date: string; sessions: number }>>([])
+  const [heatmapData, setHeatmapData] = useState<ReturnType<typeof getHeatmapData>>([])
   const [selectedTimeframe, setSelectedTimeframe] = useState<"week" | "month" | "all">("week")
 
   useEffect(() => {
     const loadData = () => {
       const userData = getStoredData()
       const weekData = getWeeklyActivityData()
+      const heatmap = getHeatmapData()
       setStats(userData)
       setWeeklyData(weekData)
+      setHeatmapData(heatmap)
     }
 
     loadData()
@@ -645,6 +648,99 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
           </TabsContent>
 
           <TabsContent value="activity" className="space-y-4">
+            {/* 学習密度ヒートマップ */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center text-sm sm:text-base">
+                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                  学習密度カレンダー
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm">過去90日間の学習活動（色が濃いほど活発）</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {heatmapData.length > 0 ? (
+                  <div className="w-full overflow-x-auto">
+                    <div className="inline-flex flex-col gap-1">
+                      {/* 曜日ラベル */}
+                      <div className="flex gap-1">
+                        <div className="w-8 text-xs text-muted-foreground"></div>
+                        {/* 週のグリッド */}
+                        <div className="flex gap-1">
+                          {Array.from({ length: 13 }).map((_, weekIndex) => {
+                            // 各週の開始日を取得
+                            const weekStart = heatmapData[weekIndex * 7]
+                            if (!weekStart) return null
+
+                            const monthLabel = weekStart.dateObj.toLocaleDateString("ja-JP", { month: "short" })
+                            const showMonth = weekIndex === 0 || weekStart.dateObj.getDate() <= 7
+
+                            return (
+                              <div key={weekIndex} className="w-[52px] text-xs text-muted-foreground text-center">
+                                {showMonth ? monthLabel : ""}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+
+                      {/* カレンダーグリッド */}
+                      {[0, 1, 2, 3, 4, 5, 6].map((dayOfWeek) => (
+                        <div key={dayOfWeek} className="flex gap-1">
+                          {/* 曜日ラベル */}
+                          <div className="w-8 text-xs text-muted-foreground flex items-center">
+                            {["日", "月", "火", "水", "木", "金", "土"][dayOfWeek]}
+                          </div>
+
+                          {/* 各週のセル */}
+                          <div className="flex gap-1">
+                            {Array.from({ length: 13 }).map((_, weekIndex) => {
+                              const dataIndex = weekIndex * 7 + dayOfWeek
+                              const dayData = heatmapData[dataIndex]
+
+                              if (!dayData) return <div key={weekIndex} className="w-3 h-3 sm:w-4 sm:h-4" />
+
+                              // セッション数に応じて色の濃さを決定
+                              let bgColor = "bg-muted"
+                              if (dayData.sessions >= 4) bgColor = "bg-blue-600"
+                              else if (dayData.sessions === 3) bgColor = "bg-blue-500"
+                              else if (dayData.sessions === 2) bgColor = "bg-blue-400"
+                              else if (dayData.sessions === 1) bgColor = "bg-blue-300"
+
+                              return (
+                                <div
+                                  key={weekIndex}
+                                  className={`w-3 h-3 sm:w-4 sm:h-4 rounded-sm ${bgColor} cursor-pointer hover:ring-2 hover:ring-primary transition-all`}
+                                  title={`${dayData.date}\n${dayData.sessions}セッション\n正答率: ${dayData.accuracy.toFixed(1)}%`}
+                                />
+                              )
+                            })}
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* 凡例 */}
+                      <div className="flex items-center gap-2 mt-4 text-xs text-muted-foreground">
+                        <span>少ない</span>
+                        <div className="w-3 h-3 bg-muted rounded-sm" />
+                        <div className="w-3 h-3 bg-blue-300 rounded-sm" />
+                        <div className="w-3 h-3 bg-blue-400 rounded-sm" />
+                        <div className="w-3 h-3 bg-blue-500 rounded-sm" />
+                        <div className="w-3 h-3 bg-blue-600 rounded-sm" />
+                        <span>多い</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="h-[200px] flex items-center justify-center text-muted-foreground">
+                    <div className="text-center">
+                      <Calendar className="w-12 h-12 mx-auto mb-2 opacity-20" />
+                      <p className="text-sm">データがありません</p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center text-sm sm:text-base">
