@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { toast } from "sonner"
 import { Toaster } from "@/components/ui/sonner"
-import { Music, RotateCcw, Trophy, TrendingUp, AlertCircle, Clock } from "lucide-react"
+import { Music, RotateCcw, Trophy, TrendingUp, AlertCircle, Clock, X } from "lucide-react"
 import { saveSessionData, type SessionData } from "@/lib/storage"
 
 const CHORD_TONES = {
@@ -106,7 +106,11 @@ type QuestionResult = {
   responseTime: number
 }
 
-export function MusicPracticeApp() {
+interface MusicPracticeAppProps {
+  onExit?: () => void
+}
+
+export function MusicPracticeApp({ onExit }: MusicPracticeAppProps) {
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null)
   const [questionNumber, setQuestionNumber] = useState(1)
   const [score, setScore] = useState(0)
@@ -115,7 +119,7 @@ export function MusicPracticeApp() {
   const [isComplete, setIsComplete] = useState(false)
   const [questions, setQuestions] = useState<Question[]>([])
   const [results, setResults] = useState<QuestionResult[]>([])
-  const [sessionId] = useState(() => `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`)
+  const [sessionId] = useState(() => `session-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`)
   const [elapsedTime, setElapsedTime] = useState(0)
   const [answeredTime, setAnsweredTime] = useState<number | null>(null)
 
@@ -276,7 +280,7 @@ export function MusicPracticeApp() {
     }
   }
 
-  const getAdvice = (stats: ReturnType<typeof getDetailedStats>) => {
+  const getAdvice = () => {
     const percentage = (score / 10) * 100
 
     if (percentage >= 90) return "素晴らしい！コードトーンの理解が深まっています。"
@@ -305,7 +309,7 @@ export function MusicPracticeApp() {
 
   if (isComplete) {
     const stats = getDetailedStats()
-    const advice = getAdvice(stats)
+    const advice = getAdvice()
 
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
@@ -456,7 +460,20 @@ export function MusicPracticeApp() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="w-full max-w-lg p-8 animate-fade-in">
+      <Card className="w-full max-w-lg p-8 animate-fade-in relative">
+        {/* 中断ボタン */}
+        {onExit && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onExit}
+            className="absolute top-4 right-4 w-8 h-8"
+            aria-label="中断"
+          >
+            <X className="w-4 h-4" />
+          </Button>
+        )}
+
         {/* ヘッダー */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
@@ -33,12 +34,17 @@ import {
   PieChartIcon,
   Activity,
   Music,
+  X,
 } from "lucide-react"
 import { getStoredData, getWeeklyActivityData, getTopWeaknesses, type UserStats } from "@/lib/storage"
 
 const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff7300", "#00ff00", "#ff00ff"]
 
-export function AnalyticsDashboard() {
+interface AnalyticsDashboardProps {
+  onExit?: () => void
+}
+
+export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
   const [stats, setStats] = useState<UserStats | null>(null)
   const [weeklyData, setWeeklyData] = useState<Array<{ date: string; sessions: number }>>([])
   const [selectedTimeframe, setSelectedTimeframe] = useState<"week" | "month" | "all">("week")
@@ -157,7 +163,20 @@ export function AnalyticsDashboard() {
   }))
 
   return (
-    <div className="min-h-screen p-2 sm:p-4 bg-background pb-20">
+    <div className="min-h-screen p-2 sm:p-4 bg-background pb-20 relative">
+      {/* 中断ボタン */}
+      {onExit && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onExit}
+          className="fixed top-4 right-4 w-8 h-8 z-10"
+          aria-label="中断"
+        >
+          <X className="w-4 h-4" />
+        </Button>
+      )}
+
       <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
         {/* ヘッダー */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
