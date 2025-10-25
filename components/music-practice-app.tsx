@@ -175,17 +175,18 @@ export function MusicPracticeApp() {
   }
 
   // 答えを確認
-  const checkAnswer = () => {
-    if (!currentQuestion || !selectedAnswer) return
+  const checkAnswer = (answer: string) => {
+    if (!currentQuestion || showResult) return
 
-    const isCorrect = selectedAnswer === currentQuestion.answer
+    const isCorrect = answer === currentQuestion.answer
     const responseTime = Date.now() - currentQuestion.startTime
     setAnsweredTime(responseTime)
+    setSelectedAnswer(answer)
     setShowResult(true)
 
     const result: QuestionResult = {
       question: currentQuestion,
-      userAnswer: selectedAnswer,
+      userAnswer: answer,
       isCorrect: isCorrect,
       responseTime: responseTime,
     }
@@ -489,13 +490,13 @@ export function MusicPracticeApp() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 mb-8">
+        <div className="grid grid-cols-2 gap-3">
           {currentQuestion.options.map((option) => (
             <Button
               key={option}
               variant={selectedAnswer === option ? "default" : "outline"}
               size="lg"
-              onClick={() => !showResult && setSelectedAnswer(option)}
+              onClick={() => checkAnswer(option)}
               disabled={showResult}
               className={`h-16 text-lg font-mono transition-all duration-200 ${
                 showResult && option === currentQuestion.answer
@@ -510,16 +511,12 @@ export function MusicPracticeApp() {
           ))}
         </div>
 
-        {/* アクションボタン */}
-        <div className="text-center">
-          {!showResult ? (
-            <Button onClick={checkAnswer} disabled={!selectedAnswer} size="lg" className="w-full">
-              答えを確認
-            </Button>
-          ) : (
+        {/* 結果表示 */}
+        {showResult && (
+          <div className="text-center mt-4">
             <div className="text-sm text-muted-foreground">次の問題まで...</div>
-          )}
-        </div>
+          </div>
+        )}
       </Card>
       <Toaster />
     </div>
