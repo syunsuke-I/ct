@@ -193,6 +193,41 @@ export const getTopWeaknesses = (type: "chord" | "root" | "interval", limit = 5)
     .slice(0, limit)
 }
 
+// コードタイプを抽出する関数
+const getChordType = (chord: string): string => {
+  if (chord.includes("m7-5")) return "m7-5"
+  if (chord.includes("m7")) return "m7"
+  if (chord.includes("7")) return "7"
+  if (chord.includes("m")) return "m"
+  return "Major"
+}
+
+// コードタイプ別の弱点を取得
+export const getChordTypeWeaknesses = () => {
+  const stats = getStoredData()
+  const typeStats: Record<string, { total: number; correct: number }> = {}
+
+  // コードタイプ別に集計
+  Object.entries(stats.chordWeaknesses).forEach(([chord, data]) => {
+    const type = getChordType(chord)
+    if (!typeStats[type]) {
+      typeStats[type] = { total: 0, correct: 0 }
+    }
+    typeStats[type].total += data.total
+    typeStats[type].correct += data.correct
+  })
+
+  return Object.entries(typeStats)
+    .filter(([_, data]) => data.total >= 3) // 最低3回は出題されたもののみ
+    .map(([type, data]) => ({
+      name: type,
+      accuracy: (data.correct / data.total) * 100,
+      total: data.total,
+      correct: data.correct,
+    }))
+    .sort((a, b) => a.accuracy - b.accuracy) // 正答率の低い順
+}
+
 // モックデータ生成（開発・テスト用）
 export const generateMockData = (): UserStats => {
   const chords = ["C", "D", "E", "F", "G", "A", "B", "Cm", "Dm", "Em", "Fm", "Gm", "Am", "C7", "D7", "E7", "F7", "G7", "A7", "Cm7", "Dm7", "Em7", "Cm7-5", "Dm7-5"]

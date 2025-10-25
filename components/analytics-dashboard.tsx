@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { BarChart, Bar, XAxis, YAxis, LineChart, Line, PieChart, Pie, Cell, Area, AreaChart, RadialBarChart, RadialBar, Legend, PolarAngleAxis } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, LineChart, Line, PieChart, Pie, Cell, Area, AreaChart, RadialBarChart, RadialBar, Legend, PolarAngleAxis, RadarChart, Radar, PolarGrid, PolarRadiusAxis } from "recharts"
 import {
   TrendingUp,
   TrendingDown,
@@ -22,7 +22,7 @@ import {
   Music,
   X,
 } from "lucide-react"
-import { getStoredData, getWeeklyActivityData, getTopWeaknesses, loadMockData, clearAllData, type UserStats } from "@/lib/storage"
+import { getStoredData, getWeeklyActivityData, getTopWeaknesses, getChordTypeWeaknesses, loadMockData, clearAllData, type UserStats } from "@/lib/storage"
 
 const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))"]
 
@@ -108,7 +108,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
     date: new Date(session.date).toLocaleDateString("ja-JP", { month: "short", day: "numeric" }),
   }))
 
-  const chordWeaknesses = getTopWeaknesses("chord", 8)
+  const chordTypeWeaknesses = getChordTypeWeaknesses()
   const rootWeaknesses = getTopWeaknesses("root", 12)
   const intervalWeaknesses = getTopWeaknesses("interval", 3)
 
@@ -394,32 +394,38 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                     <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-orange-500" />
                     ルート音別弱点
                   </CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">正答率の低いルート音（最低3回出題）</CardDescription>
+                  <CardDescription className="text-xs sm:text-sm">各ルート音の正答率（最低3回出題）</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2 sm:space-y-3">
-                    {rootWeaknesses.slice(0, 6).map((weakness, index) => (
-                      <div key={weakness.name} className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2 sm:space-x-3">
-                          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-muted flex items-center justify-center text-xs sm:text-sm font-mono font-bold">
-                            {weakness.name}
-                          </div>
-                          <div>
-                            <p className="font-medium text-xs sm:text-sm">{weakness.name}ルート</p>
-                            <p className="text-xs text-muted-foreground">
-                              {weakness.correct}/{weakness.total}問正解
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-xs sm:text-sm font-bold text-red-600">
-                            {weakness.accuracy.toFixed(1)}%
-                          </div>
-                          <Progress value={weakness.accuracy} className="w-16 sm:w-20 h-2" />
-                        </div>
+                  {rootWeaknesses.length > 0 ? (
+                    <ChartContainer
+                      config={{
+                        accuracy: {
+                          label: "正答率",
+                          color: "hsl(221.2 83.2% 53.3%)",
+                        },
+                      }}
+                      className="mx-auto aspect-square max-h-[300px]"
+                    >
+                      <RadarChart data={rootWeaknesses.map((w) => ({ root: w.name, accuracy: w.accuracy }))}>
+                        <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                        <PolarAngleAxis dataKey="root" />
+                        <PolarGrid />
+                        <Radar
+                          dataKey="accuracy"
+                          fill="var(--color-accuracy)"
+                          fillOpacity={0.6}
+                        />
+                      </RadarChart>
+                    </ChartContainer>
+                  ) : (
+                    <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                      <div className="text-center">
+                        <AlertTriangle className="w-12 h-12 mx-auto mb-2 opacity-20" />
+                        <p className="text-sm">データがありません</p>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -427,34 +433,40 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                 <CardHeader>
                   <CardTitle className="flex items-center text-sm sm:text-base">
                     <Music className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-500" />
-                    コード別弱点
+                    コードタイプ別弱点
                   </CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">苦手なコードタイプ</CardDescription>
+                  <CardDescription className="text-xs sm:text-sm">各コードタイプの正答率（最低3回出題）</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2 sm:space-y-3">
-                    {chordWeaknesses.slice(0, 6).map((weakness, index) => (
-                      <div key={weakness.name} className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2 sm:space-x-3">
-                          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-muted flex items-center justify-center text-xs font-mono font-bold">
-                            {weakness.name.length > 4 ? weakness.name.substring(0, 3) : weakness.name}
-                          </div>
-                          <div>
-                            <p className="font-medium text-xs sm:text-sm">{weakness.name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {weakness.correct}/{weakness.total}問正解
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-xs sm:text-sm font-bold text-red-600">
-                            {weakness.accuracy.toFixed(1)}%
-                          </div>
-                          <Progress value={weakness.accuracy} className="w-16 sm:w-20 h-2" />
-                        </div>
+                  {chordTypeWeaknesses.length > 0 ? (
+                    <ChartContainer
+                      config={{
+                        accuracy: {
+                          label: "正答率",
+                          color: "hsl(221.2 83.2% 53.3%)",
+                        },
+                      }}
+                      className="mx-auto aspect-square max-h-[300px]"
+                    >
+                      <RadarChart data={chordTypeWeaknesses.map((w) => ({ type: w.name, accuracy: w.accuracy }))}>
+                        <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                        <PolarAngleAxis dataKey="type" />
+                        <PolarGrid />
+                        <Radar
+                          dataKey="accuracy"
+                          fill="var(--color-accuracy)"
+                          fillOpacity={0.6}
+                        />
+                      </RadarChart>
+                    </ChartContainer>
+                  ) : (
+                    <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                      <div className="text-center">
+                        <Music className="w-12 h-12 mx-auto mb-2 opacity-20" />
+                        <p className="text-sm">データがありません</p>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
