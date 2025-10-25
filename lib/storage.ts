@@ -283,13 +283,30 @@ export const generateMockData = (): UserStats => {
   const toneNames = ["3rd", "5th", "7th"]
   const sessions: SessionData[] = []
 
-  // 過去30日分のセッションを生成
-  for (let day = 30; day >= 0; day--) {
+  // 個人差のあるパラメータ（リアルさを出すため）
+  const weakChordTypes = ["m7-5", "Cm7"] // 苦手なコードタイプ
+  const weakRoots = ["F", "B"] // 苦手なルート音
+  const weakInterval = "7th" // 苦手な音程
+
+  // 過去90日分のセッションを生成（3ヶ月）
+  for (let day = 90; day >= 0; day--) {
     const date = new Date()
     date.setDate(date.getDate() - day)
+    const dayOfWeek = date.getDay() // 0=日曜, 6=土曜
 
-    // 1日に1-3セッション
-    const sessionsPerDay = Math.floor(Math.random() * 3) + 1
+    // 学習進捗度（日が経つにつれて上達）
+    const progressRate = 1 - (day / 90) * 0.4 // 90日前は60%、現在は100%の進捗
+
+    // 曜日によって学習頻度を変える
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+    const skipProbability = isWeekend ? 0.3 : 0.4 // 週末の方が学習する確率が高い
+
+    // ランダムに学習しない日を作る
+    if (Math.random() < skipProbability) continue
+
+    // 1日のセッション数（週末や休日は多め）
+    const maxSessions = isWeekend ? 4 : 2
+    const sessionsPerDay = Math.floor(Math.random() * maxSessions) + 1
 
     for (let i = 0; i < sessionsPerDay; i++) {
       const results: QuestionResult[] = []
@@ -299,9 +316,35 @@ export const generateMockData = (): UserStats => {
       for (let q = 0; q < 10; q++) {
         const chord = chords[Math.floor(Math.random() * chords.length)]
         const toneName = toneNames[Math.floor(Math.random() * toneNames.length)]
-        const isCorrect = Math.random() > 0.3 // 70%の正答率
+        const root = extractRoot(chord)
+
+        // 基本正答率（学習進捗に応じて上昇）
+        let baseAccuracy = 0.5 + (progressRate * 0.3) // 50%→80%に上昇
+
+        // 苦手な要素がある場合は正答率を下げる
+        if (weakChordTypes.some(weak => chord.includes(weak))) baseAccuracy -= 0.15
+        if (weakRoots.includes(root)) baseAccuracy -= 0.1
+        if (toneName === weakInterval) baseAccuracy -= 0.1
+
+        // ランダム要素を追加（±15%）
+        const accuracy = Math.max(0.2, Math.min(0.95, baseAccuracy + (Math.random() - 0.5) * 0.3))
+        const isCorrect = Math.random() < accuracy
 
         if (isCorrect) correctCount++
+
+        // 回答時間も学習進捗に応じて短縮（6秒→2.5秒）
+        const baseResponseTime = 6000 - (progressRate * 3500)
+
+        // 苦手な要素は時間がかかる
+        let responseMultiplier = 1.0
+        if (weakChordTypes.some(weak => chord.includes(weak))) responseMultiplier += 0.3
+        if (weakRoots.includes(root)) responseMultiplier += 0.2
+        if (toneName === weakInterval) responseMultiplier += 0.2
+
+        // 不正解の場合は時間がかかる傾向
+        if (!isCorrect) responseMultiplier += 0.4
+
+        const responseTime = Math.floor(baseResponseTime * responseMultiplier + (Math.random() - 0.5) * 1000)
 
         results.push({
           question: {
@@ -312,14 +355,16 @@ export const generateMockData = (): UserStats => {
             options: ["C", "D", "E", "F"],
             startTime: date.getTime(),
           },
-          userAnswer: isCorrect ? "C" : "D",
+          userAnswer: isCorrect ? "C" : ["D", "E", "F"][Math.floor(Math.random() * 3)],
           isCorrect,
-          responseTime: Math.floor(Math.random() * 5000) + 1000, // 1-6秒
+          responseTime: Math.max(800, Math.min(12000, responseTime)), // 0.8秒〜12秒
         })
       }
 
       const sessionTime = new Date(date)
-      sessionTime.setHours(Math.floor(Math.random() * 12) + 9, Math.floor(Math.random() * 60))
+      // 時間帯もリアルに（朝7時〜夜11時）
+      const hour = Math.floor(Math.random() * 16) + 7
+      sessionTime.setHours(hour, Math.floor(Math.random() * 60))
 
       sessions.push({
         id: `mock-${date.toISOString()}-${i}`,
