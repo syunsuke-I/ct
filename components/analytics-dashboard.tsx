@@ -22,7 +22,7 @@ import {
   Music,
   X,
 } from "lucide-react"
-import { getStoredData, getWeeklyActivityData, getTopWeaknesses, type UserStats } from "@/lib/storage"
+import { getStoredData, getWeeklyActivityData, getTopWeaknesses, loadMockData, clearAllData, type UserStats } from "@/lib/storage"
 
 const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))"]
 
@@ -112,6 +112,12 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
   const rootWeaknesses = getTopWeaknesses("root", 12)
   const intervalWeaknesses = getTopWeaknesses("interval", 3)
 
+  // 音程別データに色を追加
+  const intervalChartData = intervalWeaknesses.map((w, index) => ({
+    ...w,
+    fill: `var(--color-interval-${index + 1})`,
+  }))
+
   const chordTypeData = [
     {
       type: "major",
@@ -150,11 +156,48 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
     },
   ].filter((item) => item.value > 0)
 
-  const weeklyActivityChart = weeklyData.map((day) => ({
+  const weeklyActivityChart = weeklyData.map((day, index) => ({
     date: new Date(day.date).toLocaleDateString("ja-JP", { weekday: "short" }),
     sessions: day.sessions,
     fullDate: day.date,
+    fill: `var(--color-day-${index + 1})`,
   }))
+
+  // 全期間のセッション数データを生成
+  const allTimeActivityData = (() => {
+    const sessionsByDate = new Map<string, { count: number; timestamp: number }>()
+
+    stats.sessions.forEach((session) => {
+      const date = new Date(session.date)
+      const dateKey = date.toLocaleDateString("ja-JP", { month: "short", day: "numeric" })
+      const existing = sessionsByDate.get(dateKey)
+
+      if (existing) {
+        existing.count++
+      } else {
+        sessionsByDate.set(dateKey, { count: 1, timestamp: date.getTime() })
+      }
+    })
+
+    return Array.from(sessionsByDate.entries())
+      .map(([date, data]) => ({ date, sessions: data.count, timestamp: data.timestamp }))
+      .sort((a, b) => a.timestamp - b.timestamp)
+  })()
+
+  const handleLoadMockData = () => {
+    const result = loadMockData()
+    console.log("Generated mock data:", result)
+    console.log("Total sessions:", result?.totalSessions)
+    console.log("Sessions array length:", result?.sessions.length)
+    window.location.reload()
+  }
+
+  const handleClearData = () => {
+    if (confirm("全データをクリアしますか？")) {
+      clearAllData()
+      window.location.reload()
+    }
+  }
 
   return (
     <div className="min-h-screen p-2 sm:p-4 bg-background pb-20 relative">
@@ -170,6 +213,16 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
           <X className="w-4 h-4" />
         </Button>
       )}
+
+      {/* デバッグボタン */}
+      <div className="fixed bottom-4 left-4 z-10 flex gap-2">
+        <Button variant="outline" size="sm" onClick={handleLoadMockData}>
+          モックデータ読込
+        </Button>
+        <Button variant="outline" size="sm" onClick={handleClearData}>
+          データクリア
+        </Button>
+      </div>
 
       <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
         {/* ヘッダー */}
@@ -275,22 +328,31 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                   <CardDescription className="text-xs sm:text-sm">最近10セッションの正答率</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ChartContainer
-                    config={{
-                      score: {
-                        label: "正答率",
-                        color: "hsl(var(--chart-1))",
-                      },
-                    }}
-                    className="h-[250px]"
-                  >
-                    <LineChart data={sessionChartData}>
-                      <XAxis dataKey="date" />
-                      <YAxis domain={[0, 100]} />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Line type="monotone" dataKey="score" stroke="var(--color-score)" strokeWidth={2} />
-                    </LineChart>
-                  </ChartContainer>
+                  {sessionChartData.length > 0 ? (
+                    <ChartContainer
+                      config={{
+                        score: {
+                          label: "正答率",
+                          color: "hsl(221.2 83.2% 53.3%)",
+                        },
+                      }}
+                      className="h-[250px]"
+                    >
+                      <LineChart data={sessionChartData}>
+                        <XAxis dataKey="date" />
+                        <YAxis domain={[0, 100]} />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Line type="monotone" dataKey="score" stroke="hsl(221.2 83.2% 53.3%)" strokeWidth={2} dot={false} />
+                      </LineChart>
+                    </ChartContainer>
+                  ) : (
+                    <div className="h-[250px] flex items-center justify-center text-muted-foreground">
+                      <div className="text-center">
+                        <TrendingUp className="w-12 h-12 mx-auto mb-2 opacity-20" />
+                        <p className="text-sm">データがありません</p>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -307,7 +369,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                     config={{
                       responseTime: {
                         label: "平均回答時間",
-                        color: "hsl(var(--chart-2))",
+                        color: "hsl(221.2 83.2% 53.3%)",
                       },
                     }}
                     className="h-[250px]"
@@ -316,7 +378,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                       <XAxis dataKey="date" />
                       <YAxis />
                       <ChartTooltip content={<ChartTooltipContent />} />
-                      <Area type="monotone" dataKey="responseTime" stroke="var(--color-responseTime)" fill="var(--color-responseTime)" fillOpacity={0.3} />
+                      <Area type="monotone" dataKey="responseTime" stroke="hsl(221.2 83.2% 53.3%)" fill="hsl(221.2 83.2% 53.3%)" fillOpacity={0.3} />
                     </AreaChart>
                   </ChartContainer>
                 </CardContent>
@@ -410,16 +472,27 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                   config={{
                     accuracy: {
                       label: "正答率",
-                      color: "hsl(var(--chart-1))",
+                    },
+                    "interval-1": {
+                      label: "3rd",
+                      color: "hsl(221.2 83.2% 53.3%)",
+                    },
+                    "interval-2": {
+                      label: "5th",
+                      color: "hsl(212 95% 68%)",
+                    },
+                    "interval-3": {
+                      label: "7th",
+                      color: "hsl(210 98% 78%)",
                     },
                   }}
                   className="h-[200px]"
                 >
-                  <BarChart data={intervalWeaknesses.map((w) => ({ name: w.name, accuracy: w.accuracy, total: w.total }))}>
+                  <BarChart data={intervalChartData.map((w) => ({ name: w.name, accuracy: w.accuracy, total: w.total, fill: w.fill }))}>
                     <XAxis dataKey="name" />
                     <YAxis domain={[0, 100]} />
                     <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="accuracy" fill="var(--color-accuracy)" />
+                    <Bar dataKey="accuracy" />
                   </BarChart>
                 </ChartContainer>
               </CardContent>
@@ -427,6 +500,44 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
           </TabsContent>
 
           <TabsContent value="activity" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center text-sm sm:text-base">
+                  <Activity className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                  全期間の活動推移
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm">全セッションの時系列推移</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {allTimeActivityData.length > 0 ? (
+                  <ChartContainer
+                    config={{
+                      sessions: {
+                        label: "セッション数",
+                        color: "hsl(221.2 83.2% 53.3%)",
+                      },
+                    }}
+                    className="h-[250px]"
+                  >
+                    <LineChart data={allTimeActivityData}>
+                      <XAxis dataKey="date" />
+                      <YAxis />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Line type="monotone" dataKey="sessions" stroke="hsl(221.2 83.2% 53.3%)" strokeWidth={2} dot={false} />
+                    </LineChart>
+                  </ChartContainer>
+                ) : (
+                  <div className="h-[250px] flex items-center justify-center text-muted-foreground">
+                    <div className="text-center">
+                      <Activity className="w-12 h-12 mx-auto mb-2 opacity-20" />
+                      <p className="text-sm">データがありません</p>
+                      <p className="text-xs mt-1">左下の「モックデータ読込」ボタンでテストデータを生成できます</p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center text-sm sm:text-base">
@@ -440,8 +551,14 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                   config={{
                     sessions: {
                       label: "セッション数",
-                      color: "hsl(var(--chart-2))",
                     },
+                    "day-1": { color: "hsl(221.2 83.2% 53.3%)" },
+                    "day-2": { color: "hsl(217 91% 60%)" },
+                    "day-3": { color: "hsl(212 95% 68%)" },
+                    "day-4": { color: "hsl(210 98% 73%)" },
+                    "day-5": { color: "hsl(210 98% 78%)" },
+                    "day-6": { color: "hsl(208 100% 85%)" },
+                    "day-7": { color: "hsl(206 100% 91%)" },
                   }}
                   className="h-[250px]"
                 >
@@ -449,7 +566,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                     <XAxis dataKey="date" />
                     <YAxis />
                     <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="sessions" fill="var(--color-sessions)" />
+                    <Bar dataKey="sessions" />
                   </BarChart>
                 </ChartContainer>
               </CardContent>

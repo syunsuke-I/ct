@@ -192,3 +192,126 @@ export const getTopWeaknesses = (type: "chord" | "root" | "interval", limit = 5)
     .sort((a, b) => a.accuracy - b.accuracy) // 正答率の低い順
     .slice(0, limit)
 }
+
+// モックデータ生成（開発・テスト用）
+export const generateMockData = (): UserStats => {
+  const chords = ["C", "D", "E", "F", "G", "A", "B", "Cm", "Dm", "Em", "Fm", "Gm", "Am", "C7", "D7", "E7", "F7", "G7", "A7", "Cm7", "Dm7", "Em7", "Cm7-5", "Dm7-5"]
+  const toneNames = ["3rd", "5th", "7th"]
+  const sessions: SessionData[] = []
+
+  // 過去30日分のセッションを生成
+  for (let day = 30; day >= 0; day--) {
+    const date = new Date()
+    date.setDate(date.getDate() - day)
+
+    // 1日に1-3セッション
+    const sessionsPerDay = Math.floor(Math.random() * 3) + 1
+
+    for (let i = 0; i < sessionsPerDay; i++) {
+      const results: QuestionResult[] = []
+      let correctCount = 0
+
+      // 10問生成
+      for (let q = 0; q < 10; q++) {
+        const chord = chords[Math.floor(Math.random() * chords.length)]
+        const toneName = toneNames[Math.floor(Math.random() * toneNames.length)]
+        const isCorrect = Math.random() > 0.3 // 70%の正答率
+
+        if (isCorrect) correctCount++
+
+        results.push({
+          question: {
+            chord,
+            tonePosition: toneNames.indexOf(toneName) + 1,
+            toneName,
+            answer: "C",
+            options: ["C", "D", "E", "F"],
+            startTime: date.getTime(),
+          },
+          userAnswer: isCorrect ? "C" : "D",
+          isCorrect,
+          responseTime: Math.floor(Math.random() * 5000) + 1000, // 1-6秒
+        })
+      }
+
+      const sessionTime = new Date(date)
+      sessionTime.setHours(Math.floor(Math.random() * 12) + 9, Math.floor(Math.random() * 60))
+
+      sessions.push({
+        id: `mock-${date.toISOString()}-${i}`,
+        date: sessionTime.toISOString(),
+        score: correctCount,
+        totalQuestions: 10,
+        results,
+        averageResponseTime: results.reduce((sum, r) => sum + r.responseTime, 0) / 10,
+      })
+    }
+  }
+
+  // 統計を計算
+  const stats: UserStats = {
+    totalSessions: sessions.length,
+    totalQuestions: sessions.length * 10,
+    totalCorrect: sessions.reduce((sum, s) => sum + s.score, 0),
+    averageScore: (sessions.reduce((sum, s) => sum + s.score, 0) / (sessions.length * 10)) * 100,
+    averageResponseTime: sessions.reduce((sum, s) => sum + s.averageResponseTime, 0) / sessions.length,
+    chordWeaknesses: {},
+    rootWeaknesses: {},
+    intervalWeaknesses: {},
+    weeklyActivity: {},
+    sessions,
+  }
+
+  // コード別、ルート音別、音程別の統計を計算
+  sessions.forEach((session) => {
+    const dateKey = session.date.split("T")[0]
+    stats.weeklyActivity[dateKey] = (stats.weeklyActivity[dateKey] || 0) + 1
+
+    session.results.forEach((result) => {
+      const chord = result.question.chord
+      const root = extractRoot(chord)
+      const interval = result.question.toneName
+
+      if (!stats.chordWeaknesses[chord]) {
+        stats.chordWeaknesses[chord] = { total: 0, correct: 0 }
+      }
+      stats.chordWeaknesses[chord].total++
+      if (result.isCorrect) stats.chordWeaknesses[chord].correct++
+
+      if (!stats.rootWeaknesses[root]) {
+        stats.rootWeaknesses[root] = { total: 0, correct: 0 }
+      }
+      stats.rootWeaknesses[root].total++
+      if (result.isCorrect) stats.rootWeaknesses[root].correct++
+
+      if (!stats.intervalWeaknesses[interval]) {
+        stats.intervalWeaknesses[interval] = { total: 0, correct: 0 }
+      }
+      stats.intervalWeaknesses[interval].total++
+      if (result.isCorrect) stats.intervalWeaknesses[interval].correct++
+    })
+  })
+
+  return stats
+}
+
+export const loadMockData = () => {
+  const mockData = generateMockData()
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(mockData))
+    console.log("✅ モックデータを読み込みました:", mockData)
+    return mockData
+  } catch (error) {
+    console.error("❌ モックデータの保存に失敗しました:", error)
+    return null
+  }
+}
+
+export const clearAllData = () => {
+  try {
+    localStorage.removeItem(STORAGE_KEY)
+    console.log("✅ 全データをクリアしました")
+  } catch (error) {
+    console.error("❌ データのクリアに失敗しました:", error)
+  }
+}
