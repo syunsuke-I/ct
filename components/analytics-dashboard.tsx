@@ -510,22 +510,53 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
               </CardHeader>
               <CardContent>
                 {allTimeActivityData.length > 0 ? (
-                  <ChartContainer
-                    config={{
-                      sessions: {
-                        label: "セッション数",
-                        color: "hsl(221.2 83.2% 53.3%)",
-                      },
-                    }}
-                    className="h-[250px]"
-                  >
-                    <LineChart data={allTimeActivityData}>
-                      <XAxis dataKey="date" />
-                      <YAxis />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Line type="monotone" dataKey="sessions" stroke="hsl(221.2 83.2% 53.3%)" strokeWidth={2} dot={false} />
-                    </LineChart>
-                  </ChartContainer>
+                  <div className="flex flex-col lg:flex-row gap-6">
+                    {/* Chart */}
+                    <div className="flex-1 min-w-0">
+                      <ChartContainer
+                        config={{
+                          sessions: {
+                            label: "セッション数",
+                            color: "hsl(221.2 83.2% 53.3%)",
+                          },
+                        }}
+                        className="h-[250px]"
+                      >
+                        <LineChart data={allTimeActivityData}>
+                          <XAxis dataKey="date" />
+                          <YAxis />
+                          <ChartTooltip content={<ChartTooltipContent />} />
+                          <Line type="monotone" dataKey="sessions" stroke="hsl(221.2 83.2% 53.3%)" strokeWidth={2} dot={false} />
+                        </LineChart>
+                      </ChartContainer>
+                    </div>
+
+                    {/* Summary Statistics */}
+                    <div className="lg:w-48 flex lg:flex-col gap-3 lg:gap-4 justify-between lg:justify-start">
+                      <div className="flex-1 lg:flex-none">
+                        <div className="text-xs text-muted-foreground mb-1">総セッション数</div>
+                        <div className="text-2xl font-bold text-primary">{stats.totalSessions}</div>
+                      </div>
+                      <div className="flex-1 lg:flex-none">
+                        <div className="text-xs text-muted-foreground mb-1">平均/日</div>
+                        <div className="text-2xl font-bold">
+                          {allTimeActivityData.length > 0
+                            ? (stats.totalSessions / allTimeActivityData.length).toFixed(1)
+                            : "0"}
+                        </div>
+                      </div>
+                      <div className="flex-1 lg:flex-none">
+                        <div className="text-xs text-muted-foreground mb-1">最多/日</div>
+                        <div className="text-2xl font-bold">
+                          {Math.max(...allTimeActivityData.map((d) => d.sessions), 0)}
+                        </div>
+                      </div>
+                      <div className="flex-1 lg:flex-none">
+                        <div className="text-xs text-muted-foreground mb-1">学習日数</div>
+                        <div className="text-2xl font-bold">{allTimeActivityData.length}</div>
+                      </div>
+                    </div>
+                  </div>
                 ) : (
                   <div className="h-[250px] flex items-center justify-center text-muted-foreground">
                     <div className="text-center">
