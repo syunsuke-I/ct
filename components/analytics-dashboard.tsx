@@ -6,22 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
-  Area,
-  AreaChart,
-} from "recharts"
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { BarChart, Bar, XAxis, YAxis, LineChart, Line, PieChart, Pie, Cell, Area, AreaChart } from "recharts"
 import {
   TrendingUp,
   TrendingDown,
@@ -38,7 +24,7 @@ import {
 } from "lucide-react"
 import { getStoredData, getWeeklyActivityData, getTopWeaknesses, type UserStats } from "@/lib/storage"
 
-const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff7300", "#00ff00", "#ff00ff"]
+const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))"]
 
 interface AnalyticsDashboardProps {
   onExit?: () => void
@@ -128,6 +114,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
 
   const chordTypeData = [
     {
+      type: "major",
       name: "メジャー",
       value: Object.values(stats.chordWeaknesses).filter(
         (w) =>
@@ -135,24 +122,31 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
             .find((k) => k.includes("m") || k.includes("7"))
             ?.includes("m"),
       ).length,
+      fill: "var(--color-major)",
     },
     {
+      type: "minor",
       name: "マイナー",
       value: Object.values(stats.chordWeaknesses).filter((w) =>
         Object.keys(stats.chordWeaknesses).find((k) => k.includes("m") && !k.includes("7") && !k.includes("-5")),
       ).length,
+      fill: "var(--color-minor)",
     },
     {
+      type: "seventh",
       name: "セブンス",
       value: Object.values(stats.chordWeaknesses).filter((w) =>
         Object.keys(stats.chordWeaknesses).find((k) => k.includes("7") && !k.includes("-5")),
       ).length,
+      fill: "var(--color-seventh)",
     },
     {
+      type: "m7b5",
       name: "m7-5",
       value: Object.values(stats.chordWeaknesses).filter((w) =>
         Object.keys(stats.chordWeaknesses).find((k) => k.includes("m7-5")),
       ).length,
+      fill: "var(--color-m7b5)",
     },
   ].filter((item) => item.value > 0)
 
@@ -281,21 +275,22 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                   <CardDescription className="text-xs sm:text-sm">最近10セッションの正答率</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={250}>
+                  <ChartContainer
+                    config={{
+                      score: {
+                        label: "正答率",
+                        color: "hsl(var(--chart-1))",
+                      },
+                    }}
+                    className="h-[250px]"
+                  >
                     <LineChart data={sessionChartData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                      <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
-                      <Tooltip formatter={(value) => [`${value}%`, "正答率"]} />
-                      <Line
-                        type="monotone"
-                        dataKey="score"
-                        stroke="#8884d8"
-                        strokeWidth={2}
-                        dot={{ fill: "#8884d8", strokeWidth: 2, r: 4 }}
-                      />
+                      <XAxis dataKey="date" />
+                      <YAxis domain={[0, 100]} />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Line type="monotone" dataKey="score" stroke="var(--color-score)" strokeWidth={2} />
                     </LineChart>
-                  </ResponsiveContainer>
+                  </ChartContainer>
                 </CardContent>
               </Card>
 
@@ -308,15 +303,22 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                   <CardDescription className="text-xs sm:text-sm">平均回答時間の変化</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={250}>
+                  <ChartContainer
+                    config={{
+                      responseTime: {
+                        label: "平均回答時間",
+                        color: "hsl(var(--chart-2))",
+                      },
+                    }}
+                    className="h-[250px]"
+                  >
                     <AreaChart data={sessionChartData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                      <YAxis tick={{ fontSize: 12 }} />
-                      <Tooltip formatter={(value) => [`${value}秒`, "平均回答時間"]} />
-                      <Area type="monotone" dataKey="responseTime" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.3} />
+                      <XAxis dataKey="date" />
+                      <YAxis />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Area type="monotone" dataKey="responseTime" stroke="var(--color-responseTime)" fill="var(--color-responseTime)" fillOpacity={0.3} />
                     </AreaChart>
-                  </ResponsiveContainer>
+                  </ChartContainer>
                 </CardContent>
               </Card>
             </div>
@@ -404,17 +406,22 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                 <CardDescription className="text-xs sm:text-sm">3rd、5th、7thの正答率比較</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart
-                    data={intervalWeaknesses.map((w) => ({ name: w.name, accuracy: w.accuracy, total: w.total }))}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                    <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
-                    <Tooltip formatter={(value) => [`${value}%`, "正答率"]} />
-                    <Bar dataKey="accuracy" fill="#8884d8" />
+                <ChartContainer
+                  config={{
+                    accuracy: {
+                      label: "正答率",
+                      color: "hsl(var(--chart-1))",
+                    },
+                  }}
+                  className="h-[200px]"
+                >
+                  <BarChart data={intervalWeaknesses.map((w) => ({ name: w.name, accuracy: w.accuracy, total: w.total }))}>
+                    <XAxis dataKey="name" />
+                    <YAxis domain={[0, 100]} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Bar dataKey="accuracy" fill="var(--color-accuracy)" />
                   </BarChart>
-                </ResponsiveContainer>
+                </ChartContainer>
               </CardContent>
             </Card>
           </TabsContent>
@@ -429,15 +436,22 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                 <CardDescription className="text-xs sm:text-sm">過去7日間の学習セッション数</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={250}>
+                <ChartContainer
+                  config={{
+                    sessions: {
+                      label: "セッション数",
+                      color: "hsl(var(--chart-2))",
+                    },
+                  }}
+                  className="h-[250px]"
+                >
                   <BarChart data={weeklyActivityChart}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip formatter={(value) => [`${value}回`, "セッション数"]} />
-                    <Bar dataKey="sessions" fill="#82ca9d" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Bar dataKey="sessions" fill="var(--color-sessions)" />
                   </BarChart>
-                </ResponsiveContainer>
+                </ChartContainer>
               </CardContent>
             </Card>
 
@@ -497,25 +511,45 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                   <CardDescription className="text-xs sm:text-sm">出題されたコードタイプの割合</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={250}>
+                  <ChartContainer
+                    config={{
+                      value: {
+                        label: "コード数",
+                      },
+                      major: {
+                        label: "メジャー",
+                        color: "hsl(221.2 83.2% 53.3%)",
+                      },
+                      minor: {
+                        label: "マイナー",
+                        color: "hsl(212 95% 68%)",
+                      },
+                      seventh: {
+                        label: "セブンス",
+                        color: "hsl(216 92% 60%)",
+                      },
+                      m7b5: {
+                        label: "m7-5",
+                        color: "hsl(210 98% 78%)",
+                      },
+                    }}
+                    className="h-[250px]"
+                  >
                     <PieChart>
+                      <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
                       <Pie
                         data={chordTypeData}
+                        dataKey="value"
+                        nameKey="type"
                         cx="50%"
                         cy="50%"
                         labelLine={false}
                         label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
                         outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {chordTypeData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
+                        stroke="0"
+                      />
                     </PieChart>
-                  </ResponsiveContainer>
+                  </ChartContainer>
                 </CardContent>
               </Card>
 
