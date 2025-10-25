@@ -490,21 +490,32 @@ export function MusicPracticeApp({ onExit }: MusicPracticeAppProps) {
         </div>
 
         {/* 問題 */}
-        <div className="text-center mb-8">
-          <div className="mb-6">
-            <div className="text-4xl font-bold mb-2 font-mono">{formatChordName(currentQuestion.chord)}</div>
-            <p className="text-lg text-muted-foreground">の{currentQuestion.toneName}は？</p>
+        <div className="mb-8 relative">
+          {/* 現在の問題（中央） */}
+          <div className="text-center">
+            <div className="mb-6">
+              <div className="text-4xl font-bold mb-2 font-mono">{formatChordName(currentQuestion.chord)}</div>
+              <p className="text-lg text-muted-foreground">の{currentQuestion.toneName}は？</p>
+            </div>
+
+            {/* 時間表示 */}
+            <div className="flex items-center justify-center gap-2 text-sm">
+              <Clock className="w-4 h-4 text-muted-foreground" />
+              <span className={`font-mono ${showResult ? "text-muted-foreground" : "text-foreground font-semibold"}`}>
+                {showResult && answeredTime !== null
+                  ? `${(answeredTime / 1000).toFixed(1)}秒`
+                  : `${(elapsedTime / 1000).toFixed(1)}秒`}
+              </span>
+            </div>
           </div>
 
-          {/* 時間表示 */}
-          <div className="flex items-center justify-center gap-2 text-sm">
-            <Clock className="w-4 h-4 text-muted-foreground" />
-            <span className={`font-mono ${showResult ? "text-muted-foreground" : "text-foreground font-semibold"}`}>
-              {showResult && answeredTime !== null
-                ? `${(answeredTime / 1000).toFixed(1)}秒`
-                : `${(elapsedTime / 1000).toFixed(1)}秒`}
-            </span>
-          </div>
+          {/* 次の問題プレビュー（右側・薄く） */}
+          {questionNumber < 10 && !showResult && (
+            <div className="absolute right-16 top-8 opacity-25 text-right">
+              <div className="text-lg font-mono">{formatChordName(questions[questionNumber].chord)}</div>
+              <p className="text-xs">{questions[questionNumber].toneName}</p>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
