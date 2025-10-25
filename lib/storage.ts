@@ -181,6 +181,35 @@ export const getTopWeaknesses = (type: "chord" | "root" | "interval", limit = 5)
       break
   }
 
+  // 各キーの平均解答時間を計算
+  const avgResponseTimes: Record<string, number> = {}
+  stats.sessions.forEach((session) => {
+    session.results.forEach((result) => {
+      let key: string
+      switch (type) {
+        case "chord":
+          key = result.question.chord
+          break
+        case "root":
+          key = extractRoot(result.question.chord)
+          break
+        case "interval":
+          key = result.question.toneName
+          break
+      }
+      if (!avgResponseTimes[key]) {
+        avgResponseTimes[key] = 0
+      }
+      avgResponseTimes[key] += result.responseTime
+    })
+  })
+
+  Object.keys(avgResponseTimes).forEach((key) => {
+    if (weaknesses[key]) {
+      avgResponseTimes[key] = avgResponseTimes[key] / weaknesses[key].total
+    }
+  })
+
   return Object.entries(weaknesses)
     .filter(([_, data]) => data.total >= 3) // 最低3回は出題されたもののみ
     .map(([key, data]) => ({
@@ -188,6 +217,7 @@ export const getTopWeaknesses = (type: "chord" | "root" | "interval", limit = 5)
       accuracy: (data.correct / data.total) * 100,
       total: data.total,
       correct: data.correct,
+      avgResponseTime: avgResponseTimes[key] || 0,
     }))
     .sort((a, b) => a.accuracy - b.accuracy) // 正答率の低い順
     .slice(0, limit)
@@ -206,6 +236,7 @@ const getChordType = (chord: string): string => {
 export const getChordTypeWeaknesses = () => {
   const stats = getStoredData()
   const typeStats: Record<string, { total: number; correct: number }> = {}
+  const avgResponseTimes: Record<string, number> = {}
 
   // コードタイプ別に集計
   Object.entries(stats.chordWeaknesses).forEach(([chord, data]) => {
@@ -217,6 +248,23 @@ export const getChordTypeWeaknesses = () => {
     typeStats[type].correct += data.correct
   })
 
+  // 平均解答時間を計算
+  stats.sessions.forEach((session) => {
+    session.results.forEach((result) => {
+      const type = getChordType(result.question.chord)
+      if (!avgResponseTimes[type]) {
+        avgResponseTimes[type] = 0
+      }
+      avgResponseTimes[type] += result.responseTime
+    })
+  })
+
+  Object.keys(avgResponseTimes).forEach((type) => {
+    if (typeStats[type]) {
+      avgResponseTimes[type] = avgResponseTimes[type] / typeStats[type].total
+    }
+  })
+
   return Object.entries(typeStats)
     .filter(([_, data]) => data.total >= 3) // 最低3回は出題されたもののみ
     .map(([type, data]) => ({
@@ -224,6 +272,7 @@ export const getChordTypeWeaknesses = () => {
       accuracy: (data.correct / data.total) * 100,
       total: data.total,
       correct: data.correct,
+      avgResponseTime: avgResponseTimes[type] || 0,
     }))
     .sort((a, b) => a.accuracy - b.accuracy) // 正答率の低い順
 }

@@ -388,11 +388,12 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
 
           <TabsContent value="weaknesses" className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* ルート音別正答率 */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center text-sm sm:text-base">
                     <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-orange-500" />
-                    ルート音別弱点
+                    ルート音別正答率
                   </CardTitle>
                   <CardDescription className="text-xs sm:text-sm">各ルート音の正答率（最低3回出題）</CardDescription>
                 </CardHeader>
@@ -401,11 +402,11 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                     <ChartContainer
                       config={{
                         accuracy: {
-                          label: "正答率",
+                          label: "正答率 (%)",
                           color: "hsl(221.2 83.2% 53.3%)",
                         },
                       }}
-                      className="mx-auto aspect-square max-h-[300px]"
+                      className="mx-auto aspect-square max-h-[250px]"
                     >
                       <RadarChart data={rootWeaknesses.map((w) => ({ root: w.name, accuracy: w.accuracy }))}>
                         <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
@@ -419,7 +420,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                       </RadarChart>
                     </ChartContainer>
                   ) : (
-                    <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                    <div className="h-[250px] flex items-center justify-center text-muted-foreground">
                       <div className="text-center">
                         <AlertTriangle className="w-12 h-12 mx-auto mb-2 opacity-20" />
                         <p className="text-sm">データがありません</p>
@@ -429,11 +430,54 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                 </CardContent>
               </Card>
 
+              {/* ルート音別解答速度 */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center text-sm sm:text-base">
+                    <Clock className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-orange-500" />
+                    ルート音別解答速度
+                  </CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">各ルート音の平均解答時間（秒）</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {rootWeaknesses.length > 0 ? (
+                    <ChartContainer
+                      config={{
+                        speed: {
+                          label: "解答時間 (秒)",
+                          color: "hsl(221.2 83.2% 53.3%)",
+                        },
+                      }}
+                      className="mx-auto aspect-square max-h-[250px]"
+                    >
+                      <RadarChart data={rootWeaknesses.map((w) => ({ root: w.name, speed: (w.avgResponseTime / 1000).toFixed(2) }))}>
+                        <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                        <PolarAngleAxis dataKey="root" />
+                        <PolarGrid />
+                        <Radar
+                          dataKey="speed"
+                          fill="var(--color-speed)"
+                          fillOpacity={0.6}
+                        />
+                      </RadarChart>
+                    </ChartContainer>
+                  ) : (
+                    <div className="h-[250px] flex items-center justify-center text-muted-foreground">
+                      <div className="text-center">
+                        <Clock className="w-12 h-12 mx-auto mb-2 opacity-20" />
+                        <p className="text-sm">データがありません</p>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* コードタイプ別正答率 */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center text-sm sm:text-base">
                     <Music className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-500" />
-                    コードタイプ別弱点
+                    コードタイプ別正答率
                   </CardTitle>
                   <CardDescription className="text-xs sm:text-sm">各コードタイプの正答率（最低3回出題）</CardDescription>
                 </CardHeader>
@@ -442,11 +486,11 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                     <ChartContainer
                       config={{
                         accuracy: {
-                          label: "正答率",
+                          label: "正答率 (%)",
                           color: "hsl(221.2 83.2% 53.3%)",
                         },
                       }}
-                      className="mx-auto aspect-square max-h-[300px]"
+                      className="mx-auto aspect-square max-h-[250px]"
                     >
                       <RadarChart data={chordTypeWeaknesses.map((w) => ({ type: w.name, accuracy: w.accuracy }))}>
                         <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
@@ -460,7 +504,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                       </RadarChart>
                     </ChartContainer>
                   ) : (
-                    <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                    <div className="h-[250px] flex items-center justify-center text-muted-foreground">
                       <div className="text-center">
                         <Music className="w-12 h-12 mx-auto mb-2 opacity-20" />
                         <p className="text-sm">データがありません</p>
@@ -469,46 +513,135 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                   )}
                 </CardContent>
               </Card>
+
+              {/* コードタイプ別解答速度 */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center text-sm sm:text-base">
+                    <Clock className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-500" />
+                    コードタイプ別解答速度
+                  </CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">各コードタイプの平均解答時間（秒）</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {chordTypeWeaknesses.length > 0 ? (
+                    <ChartContainer
+                      config={{
+                        speed: {
+                          label: "解答時間 (秒)",
+                          color: "hsl(221.2 83.2% 53.3%)",
+                        },
+                      }}
+                      className="mx-auto aspect-square max-h-[250px]"
+                    >
+                      <RadarChart data={chordTypeWeaknesses.map((w) => ({ type: w.name, speed: (w.avgResponseTime / 1000).toFixed(2) }))}>
+                        <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                        <PolarAngleAxis dataKey="type" />
+                        <PolarGrid />
+                        <Radar
+                          dataKey="speed"
+                          fill="var(--color-speed)"
+                          fillOpacity={0.6}
+                        />
+                      </RadarChart>
+                    </ChartContainer>
+                  ) : (
+                    <div className="h-[250px] flex items-center justify-center text-muted-foreground">
+                      <div className="text-center">
+                        <Clock className="w-12 h-12 mx-auto mb-2 opacity-20" />
+                        <p className="text-sm">データがありません</p>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center text-sm sm:text-base">
-                  <Target className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-green-500" />
-                  音程別成績
-                </CardTitle>
-                <CardDescription className="text-xs sm:text-sm">3rd、5th、7thの正答率比較</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{
-                    accuracy: {
-                      label: "正答率",
-                    },
-                    "interval-1": {
-                      label: "3rd",
-                      color: "hsl(221.2 83.2% 53.3%)",
-                    },
-                    "interval-2": {
-                      label: "5th",
-                      color: "hsl(212 95% 68%)",
-                    },
-                    "interval-3": {
-                      label: "7th",
-                      color: "hsl(210 98% 78%)",
-                    },
-                  }}
-                  className="h-[200px]"
-                >
-                  <BarChart data={intervalChartData.map((w) => ({ name: w.name, accuracy: w.accuracy, total: w.total, fill: w.fill }))}>
-                    <XAxis dataKey="name" />
-                    <YAxis domain={[0, 100]} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="accuracy" />
-                  </BarChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* 音程別正答率 */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center text-sm sm:text-base">
+                    <Target className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-green-500" />
+                    音程別正答率
+                  </CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">3rd、5th、7thの正答率（最低3回出題）</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {intervalWeaknesses.length > 0 ? (
+                    <ChartContainer
+                      config={{
+                        accuracy: {
+                          label: "正答率 (%)",
+                          color: "hsl(221.2 83.2% 53.3%)",
+                        },
+                      }}
+                      className="mx-auto aspect-square max-h-[250px]"
+                    >
+                      <RadarChart data={intervalWeaknesses.map((w) => ({ interval: w.name, accuracy: w.accuracy }))}>
+                        <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                        <PolarAngleAxis dataKey="interval" />
+                        <PolarGrid />
+                        <Radar
+                          dataKey="accuracy"
+                          fill="var(--color-accuracy)"
+                          fillOpacity={0.6}
+                        />
+                      </RadarChart>
+                    </ChartContainer>
+                  ) : (
+                    <div className="h-[250px] flex items-center justify-center text-muted-foreground">
+                      <div className="text-center">
+                        <Target className="w-12 h-12 mx-auto mb-2 opacity-20" />
+                        <p className="text-sm">データがありません</p>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* 音程別解答速度 */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center text-sm sm:text-base">
+                    <Clock className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-green-500" />
+                    音程別解答速度
+                  </CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">3rd、5th、7thの平均解答時間（秒）</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {intervalWeaknesses.length > 0 ? (
+                    <ChartContainer
+                      config={{
+                        speed: {
+                          label: "解答時間 (秒)",
+                          color: "hsl(221.2 83.2% 53.3%)",
+                        },
+                      }}
+                      className="mx-auto aspect-square max-h-[250px]"
+                    >
+                      <RadarChart data={intervalWeaknesses.map((w) => ({ interval: w.name, speed: (w.avgResponseTime / 1000).toFixed(2) }))}>
+                        <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                        <PolarAngleAxis dataKey="interval" />
+                        <PolarGrid />
+                        <Radar
+                          dataKey="speed"
+                          fill="var(--color-speed)"
+                          fillOpacity={0.6}
+                        />
+                      </RadarChart>
+                    </ChartContainer>
+                  ) : (
+                    <div className="h-[250px] flex items-center justify-center text-muted-foreground">
+                      <div className="text-center">
+                        <Clock className="w-12 h-12 mx-auto mb-2 opacity-20" />
+                        <p className="text-sm">データがありません</p>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="activity" className="space-y-4">
