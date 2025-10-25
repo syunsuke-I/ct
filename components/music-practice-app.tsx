@@ -214,28 +214,27 @@ export function MusicPracticeApp({ onExit }: MusicPracticeAppProps) {
       })
     }
 
-    setTimeout(() => {
-      if (questionNumber < 10) {
-        const nextQuestion = { ...questions[questionNumber], startTime: Date.now() }
-        setCurrentQuestion(nextQuestion)
-        setQuestionNumber(questionNumber + 1)
-        setSelectedAnswer("")
-        setShowResult(false)
-        setElapsedTime(0)
-        setAnsweredTime(null)
-      } else {
-        const sessionData: SessionData = {
-          id: sessionId,
-          date: new Date().toISOString(),
-          score: score + (isCorrect ? 1 : 0),
-          totalQuestions: 10,
-          results: [...results, result],
-          averageResponseTime: [...results, result].reduce((sum, r) => sum + r.responseTime, 0) / 10,
-        }
-        saveSessionData(sessionData)
-        setIsComplete(true)
+    // 即座に次の問題へ移行
+    if (questionNumber < 10) {
+      const nextQuestion = { ...questions[questionNumber], startTime: Date.now() }
+      setCurrentQuestion(nextQuestion)
+      setQuestionNumber(questionNumber + 1)
+      setSelectedAnswer("")
+      setShowResult(false)
+      setElapsedTime(0)
+      setAnsweredTime(null)
+    } else {
+      const sessionData: SessionData = {
+        id: sessionId,
+        date: new Date().toISOString(),
+        score: score + (isCorrect ? 1 : 0),
+        totalQuestions: 10,
+        results: [...results, result],
+        averageResponseTime: [...results, result].reduce((sum, r) => sum + r.responseTime, 0) / 10,
       }
-    }, 2000)
+      saveSessionData(sessionData)
+      setIsComplete(true)
+    }
   }
 
   const getDetailedStats = () => {
