@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { BarChart, Bar, XAxis, YAxis, LineChart, Line, PieChart, Pie, Cell, Area, AreaChart } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, LineChart, Line, PieChart, Pie, Cell, Area, AreaChart, RadialBarChart, RadialBar, Legend, PolarAngleAxis } from "recharts"
 import {
   TrendingUp,
   TrendingDown,
@@ -675,31 +675,78 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                   <CardTitle className="text-sm sm:text-base">学習統計サマリー</CardTitle>
                   <CardDescription className="text-xs sm:text-sm">全体的な学習データ</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                    <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-lg">
-                      <div className="text-lg sm:text-2xl font-bold text-blue-600">{stats.totalSessions}</div>
-                      <div className="text-xs text-muted-foreground">総セッション数</div>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-6">
+                    {/* 総セッション数 */}
+                    <div className="flex flex-col items-center">
+                      <ChartContainer
+                        config={{
+                          sessions: {
+                            label: "セッション",
+                            color: "hsl(221.2 83.2% 53.3%)",
+                          },
+                        }}
+                        className="mx-auto aspect-square w-full max-w-[150px]"
+                      >
+                        <RadialBarChart
+                          data={[{ value: Math.min((stats.totalSessions / 100) * 100, 100) }]}
+                          startAngle={90}
+                          endAngle={450}
+                          innerRadius={60}
+                          outerRadius={80}
+                        >
+                          <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
+                          <RadialBar dataKey="value" fill="hsl(221.2 83.2% 53.3%)" cornerRadius={10} />
+                          <text
+                            x="50%"
+                            y="50%"
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            className="fill-foreground text-3xl font-bold"
+                          >
+                            {stats.totalSessions}
+                          </text>
+                        </RadialBarChart>
+                      </ChartContainer>
+                      <div className="text-sm text-muted-foreground mt-2">総セッション数</div>
                     </div>
-                    <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-lg">
-                      <div className="text-lg sm:text-2xl font-bold text-green-600">{stats.totalCorrect}</div>
-                      <div className="text-xs text-muted-foreground">総正解数</div>
-                    </div>
-                    <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-lg">
-                      <div className="text-lg sm:text-2xl font-bold text-orange-600">
-                        {Object.keys(stats.chordWeaknesses).length}
-                      </div>
-                      <div className="text-xs text-muted-foreground">学習したコード数</div>
-                    </div>
-                    <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-lg">
-                      <div className="text-lg sm:text-2xl font-bold text-purple-600">
-                        {Object.keys(stats.rootWeaknesses).length}
-                      </div>
-                      <div className="text-xs text-muted-foreground">学習したルート音数</div>
+
+                    {/* 総正解数 */}
+                    <div className="flex flex-col items-center">
+                      <ChartContainer
+                        config={{
+                          correct: {
+                            label: "正解",
+                            color: "hsl(212 95% 68%)",
+                          },
+                        }}
+                        className="mx-auto aspect-square w-full max-w-[150px]"
+                      >
+                        <RadialBarChart
+                          data={[{ value: Math.min((stats.totalCorrect / 500) * 100, 100) }]}
+                          startAngle={90}
+                          endAngle={450}
+                          innerRadius={60}
+                          outerRadius={80}
+                        >
+                          <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
+                          <RadialBar dataKey="value" fill="hsl(212 95% 68%)" cornerRadius={10} />
+                          <text
+                            x="50%"
+                            y="50%"
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            className="fill-foreground text-3xl font-bold"
+                          >
+                            {stats.totalCorrect}
+                          </text>
+                        </RadialBarChart>
+                      </ChartContainer>
+                      <div className="text-sm text-muted-foreground mt-2">総正解数</div>
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t">
+                  <div className="pt-4 border-t mt-4">
                     <h4 className="font-semibold mb-2 text-sm">学習の推奨事項</h4>
                     <ul className="text-xs sm:text-sm text-muted-foreground space-y-1">
                       {stats.averageScore < 70 && <li>• 基礎的なコードトーンの復習をお勧めします</li>}
