@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { BarChart, Bar, XAxis, YAxis, LineChart, Line, PieChart, Pie, Cell, Area, AreaChart, RadialBarChart, RadialBar, Legend, PolarAngleAxis, RadarChart, Radar, PolarGrid, PolarRadiusAxis } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, LineChart, Line, Area, AreaChart, RadialBarChart, RadialBar, PolarAngleAxis, RadarChart, Radar, PolarGrid, PolarRadiusAxis } from "recharts"
 import {
   TrendingUp,
   TrendingDown,
@@ -17,14 +17,11 @@ import {
   Award,
   AlertTriangle,
   BarChart3,
-  PieChartIcon,
   Activity,
   Music,
   X,
 } from "lucide-react"
 import { getStoredData, getWeeklyActivityData, getTopWeaknesses, getChordTypeWeaknesses, getHeatmapData, loadMockData, clearAllData, type UserStats } from "@/lib/storage"
-
-const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))"]
 
 interface AnalyticsDashboardProps {
   onExit?: () => void
@@ -120,44 +117,6 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
     ...w,
     fill: `var(--color-interval-${index + 1})`,
   }))
-
-  const chordTypeData = [
-    {
-      type: "major",
-      name: "メジャー",
-      value: Object.values(stats.chordWeaknesses).filter(
-        (w) =>
-          !Object.keys(stats.chordWeaknesses)
-            .find((k) => k.includes("m") || k.includes("7"))
-            ?.includes("m"),
-      ).length,
-      fill: "var(--color-major)",
-    },
-    {
-      type: "minor",
-      name: "マイナー",
-      value: Object.values(stats.chordWeaknesses).filter((w) =>
-        Object.keys(stats.chordWeaknesses).find((k) => k.includes("m") && !k.includes("7") && !k.includes("-5")),
-      ).length,
-      fill: "var(--color-minor)",
-    },
-    {
-      type: "seventh",
-      name: "セブンス",
-      value: Object.values(stats.chordWeaknesses).filter((w) =>
-        Object.keys(stats.chordWeaknesses).find((k) => k.includes("7") && !k.includes("-5")),
-      ).length,
-      fill: "var(--color-seventh)",
-    },
-    {
-      type: "m7b5",
-      name: "m7-5",
-      value: Object.values(stats.chordWeaknesses).filter((w) =>
-        Object.keys(stats.chordWeaknesses).find((k) => k.includes("m7-5")),
-      ).length,
-      fill: "var(--color-m7b5)",
-    },
-  ].filter((item) => item.value > 0)
 
   const weeklyActivityChart = weeklyData.map((day, index) => ({
     date: new Date(day.date).toLocaleDateString("ja-JP", { weekday: "short" }),
@@ -900,59 +859,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
           </TabsContent>
 
           <TabsContent value="detailed" className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center text-sm sm:text-base">
-                    <PieChartIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                    コードタイプ分布
-                  </CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">出題されたコードタイプの割合</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ChartContainer
-                    config={{
-                      value: {
-                        label: "コード数",
-                      },
-                      major: {
-                        label: "メジャー",
-                        color: "hsl(221.2 83.2% 53.3%)",
-                      },
-                      minor: {
-                        label: "マイナー",
-                        color: "hsl(212 95% 68%)",
-                      },
-                      seventh: {
-                        label: "セブンス",
-                        color: "hsl(216 92% 60%)",
-                      },
-                      m7b5: {
-                        label: "m7-5",
-                        color: "hsl(210 98% 78%)",
-                      },
-                    }}
-                    className="h-[250px]"
-                  >
-                    <PieChart>
-                      <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-                      <Pie
-                        data={chordTypeData}
-                        dataKey="value"
-                        nameKey="type"
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        outerRadius={80}
-                        stroke="0"
-                      />
-                    </PieChart>
-                  </ChartContainer>
-                </CardContent>
-              </Card>
-
-              <Card>
+            <Card>
                 <CardHeader>
                   <CardTitle className="text-sm sm:text-base">学習統計サマリー</CardTitle>
                   <CardDescription className="text-xs sm:text-sm">全体的な学習データ</CardDescription>
@@ -1043,7 +950,6 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                   </div>
                 </CardContent>
               </Card>
-            </div>
           </TabsContent>
         </Tabs>
       </div>
