@@ -308,11 +308,11 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                           color: "hsl(221.2 83.2% 53.3%)",
                         },
                       }}
-                      className="h-[250px]"
+                      className="h-[250px] w-full"
                     >
-                      <LineChart data={sessionChartData}>
-                        <XAxis dataKey="date" />
-                        <YAxis domain={[0, 100]} />
+                      <LineChart data={sessionChartData} margin={{ left: -20, right: 10 }}>
+                        <XAxis dataKey="date" tick={{ fontSize: 11 }} angle={-45} textAnchor="end" height={60} />
+                        <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
                         <ChartTooltip content={<ChartTooltipContent />} />
                         <Line type="monotone" dataKey="score" stroke="hsl(221.2 83.2% 53.3%)" strokeWidth={2} dot={false} />
                       </LineChart>
@@ -344,11 +344,11 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                         color: "hsl(221.2 83.2% 53.3%)",
                       },
                     }}
-                    className="h-[250px]"
+                    className="h-[250px] w-full"
                   >
-                    <AreaChart data={sessionChartData}>
-                      <XAxis dataKey="date" />
-                      <YAxis />
+                    <AreaChart data={sessionChartData} margin={{ left: -20, right: 10 }}>
+                      <XAxis dataKey="date" tick={{ fontSize: 11 }} angle={-45} textAnchor="end" height={60} />
+                      <YAxis tick={{ fontSize: 11 }} />
                       <ChartTooltip content={<ChartTooltipContent />} />
                       <Area type="monotone" dataKey="responseTime" stroke="hsl(221.2 83.2% 53.3%)" fill="hsl(221.2 83.2% 53.3%)" fillOpacity={0.3} />
                     </AreaChart>
@@ -378,11 +378,11 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                           color: "hsl(221.2 83.2% 53.3%)",
                         },
                       }}
-                      className="mx-auto aspect-square max-h-[250px]"
+                      className="mx-auto aspect-square max-h-[250px] w-full max-w-[250px]"
                     >
-                      <RadarChart data={rootWeaknesses.map((w) => ({ root: w.name, accuracy: w.accuracy }))}>
+                      <RadarChart data={rootWeaknesses.map((w) => ({ root: w.name, accuracy: w.accuracy }))} margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
                         <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                        <PolarAngleAxis dataKey="root" />
+                        <PolarAngleAxis dataKey="root" tick={{ fontSize: 10 }} />
                         <PolarGrid />
                         <Radar
                           dataKey="accuracy"
@@ -420,11 +420,11 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                           color: "hsl(221.2 83.2% 53.3%)",
                         },
                       }}
-                      className="mx-auto aspect-square max-h-[250px]"
+                      className="mx-auto aspect-square max-h-[250px] w-full max-w-[250px]"
                     >
-                      <RadarChart data={rootWeaknesses.map((w) => ({ root: w.name, speed: (w.avgResponseTime / 1000).toFixed(2) }))}>
+                      <RadarChart data={rootWeaknesses.map((w) => ({ root: w.name, speed: (w.avgResponseTime / 1000).toFixed(2) }))} margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
                         <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                        <PolarAngleAxis dataKey="root" />
+                        <PolarAngleAxis dataKey="root" tick={{ fontSize: 10 }} />
                         <PolarGrid />
                         <Radar
                           dataKey="speed"
@@ -462,11 +462,11 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                           color: "hsl(221.2 83.2% 53.3%)",
                         },
                       }}
-                      className="mx-auto aspect-square max-h-[250px]"
+                      className="mx-auto aspect-square max-h-[250px] w-full max-w-[250px]"
                     >
-                      <RadarChart data={chordTypeWeaknesses.map((w) => ({ type: w.name, accuracy: w.accuracy }))}>
+                      <RadarChart data={chordTypeWeaknesses.map((w) => ({ type: w.name, accuracy: w.accuracy }))} margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
                         <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                        <PolarAngleAxis dataKey="type" />
+                        <PolarAngleAxis dataKey="type" tick={{ fontSize: 10 }} />
                         <PolarGrid />
                         <Radar
                           dataKey="accuracy"
@@ -504,11 +504,11 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                           color: "hsl(221.2 83.2% 53.3%)",
                         },
                       }}
-                      className="mx-auto aspect-square max-h-[250px]"
+                      className="mx-auto aspect-square max-h-[250px] w-full max-w-[250px]"
                     >
-                      <RadarChart data={chordTypeWeaknesses.map((w) => ({ type: w.name, speed: (w.avgResponseTime / 1000).toFixed(2) }))}>
+                      <RadarChart data={chordTypeWeaknesses.map((w) => ({ type: w.name, speed: (w.avgResponseTime / 1000).toFixed(2) }))} margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
                         <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                        <PolarAngleAxis dataKey="type" />
+                        <PolarAngleAxis dataKey="type" tick={{ fontSize: 10 }} />
                         <PolarGrid />
                         <Radar
                           dataKey="speed"
@@ -548,11 +548,11 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                           color: "hsl(221.2 83.2% 53.3%)",
                         },
                       }}
-                      className="mx-auto aspect-square max-h-[250px]"
+                      className="mx-auto aspect-square max-h-[250px] w-full max-w-[250px]"
                     >
-                      <RadarChart data={intervalWeaknesses.map((w) => ({ interval: w.name, accuracy: w.accuracy }))}>
+                      <RadarChart data={intervalWeaknesses.map((w) => ({ interval: w.name, accuracy: w.accuracy }))} margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
                         <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                        <PolarAngleAxis dataKey="interval" />
+                        <PolarAngleAxis dataKey="interval" tick={{ fontSize: 10 }} />
                         <PolarGrid />
                         <Radar
                           dataKey="accuracy"
@@ -590,11 +590,11 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                           color: "hsl(221.2 83.2% 53.3%)",
                         },
                       }}
-                      className="mx-auto aspect-square max-h-[250px]"
+                      className="mx-auto aspect-square max-h-[250px] w-full max-w-[250px]"
                     >
-                      <RadarChart data={intervalWeaknesses.map((w) => ({ interval: w.name, speed: (w.avgResponseTime / 1000).toFixed(2) }))}>
+                      <RadarChart data={intervalWeaknesses.map((w) => ({ interval: w.name, speed: (w.avgResponseTime / 1000).toFixed(2) }))} margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
                         <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                        <PolarAngleAxis dataKey="interval" />
+                        <PolarAngleAxis dataKey="interval" tick={{ fontSize: 10 }} />
                         <PolarGrid />
                         <Radar
                           dataKey="speed"
@@ -730,11 +730,11 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                             color: "hsl(221.2 83.2% 53.3%)",
                           },
                         }}
-                        className="h-[250px]"
+                        className="h-[250px] w-full"
                       >
-                        <LineChart data={allTimeActivityData}>
-                          <XAxis dataKey="date" />
-                          <YAxis />
+                        <LineChart data={allTimeActivityData} margin={{ left: -20, right: 10 }}>
+                          <XAxis dataKey="date" tick={{ fontSize: 11 }} angle={-45} textAnchor="end" height={60} />
+                          <YAxis tick={{ fontSize: 11 }} />
                           <ChartTooltip content={<ChartTooltipContent />} />
                           <Line type="monotone" dataKey="sessions" stroke="hsl(221.2 83.2% 53.3%)" strokeWidth={2} dot={false} />
                         </LineChart>
@@ -801,11 +801,11 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                     "day-6": { color: "hsl(208 100% 85%)" },
                     "day-7": { color: "hsl(206 100% 91%)" },
                   }}
-                  className="h-[250px]"
+                  className="h-[250px] w-full"
                 >
-                  <BarChart data={weeklyActivityChart}>
-                    <XAxis dataKey="date" />
-                    <YAxis />
+                  <BarChart data={weeklyActivityChart} margin={{ left: -20, right: 10 }}>
+                    <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 11 }} />
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Bar dataKey="sessions" />
                   </BarChart>
