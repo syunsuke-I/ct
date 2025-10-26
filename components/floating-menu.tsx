@@ -60,27 +60,27 @@ export function FloatingMenu({ currentView, onViewChange }: FloatingMenuProps) {
   const menuItems = [
     {
       id: "practice",
-      label: "練習モード",
+      label: "Practice",
       icon: Play,
-      description: "コードトーンクイズを開始",
+      description: "Start chord tone quiz",
       color: "text-blue-600",
       bgColor: "bg-blue-50 hover:bg-blue-100",
     },
     {
       id: "analytics",
-      label: "アナリティクス",
+      label: "Analytics",
       icon: BarChart3,
-      description: "学習データと進歩を確認",
+      description: "View learning data & progress",
       color: "text-green-600",
       bgColor: "bg-green-50 hover:bg-green-100",
     },
   ]
 
   const quickStats = [
-    { icon: Trophy, label: "今日のベスト", value: `${stats.todayBest}%` },
-    { icon: TrendingUp, label: "週間平均", value: `${stats.weeklyAverage}%` },
-    { icon: Calendar, label: "学習日数", value: `${stats.learningDays}日` },
-    { icon: Target, label: "総正答率", value: `${stats.totalAccuracy}%` },
+    { icon: Trophy, label: "Today's best", value: `${stats.todayBest}%` },
+    { icon: TrendingUp, label: "Weekly avg", value: `${stats.weeklyAverage}%` },
+    { icon: Calendar, label: "Active days", value: `${stats.learningDays}` },
+    { icon: Target, label: "Total accuracy", value: `${stats.totalAccuracy}%` },
   ]
 
   const handleMenuItemClick = (viewId: "practice" | "analytics") => {
@@ -118,8 +118,8 @@ export function FloatingMenu({ currentView, onViewChange }: FloatingMenuProps) {
         <Card className="w-72 sm:w-80 p-4 sm:p-6 shadow-xl border-0 bg-white/95 backdrop-blur-md max-h-[80vh] overflow-y-auto">
           {/* ヘッダー */}
           <div className="mb-4 sm:mb-6">
-            <h3 className="text-base sm:text-lg font-semibold mb-1">音楽練習アプリ</h3>
-            <p className="text-xs sm:text-sm text-muted-foreground">学習メニューを選択してください</p>
+            <h3 className="text-base sm:text-lg font-semibold mb-1">Music Practice</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground">Select a menu option</p>
           </div>
 
           {/* メインメニュー */}
@@ -158,7 +158,7 @@ export function FloatingMenu({ currentView, onViewChange }: FloatingMenuProps) {
 
           {/* クイック統計 */}
           <div className="border-t pt-3 sm:pt-4">
-            <h4 className="text-xs sm:text-sm font-medium mb-2 sm:mb-3 text-muted-foreground">クイック統計</h4>
+            <h4 className="text-xs sm:text-sm font-medium mb-2 sm:mb-3 text-muted-foreground">Quick stats</h4>
             <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
               {quickStats.map((stat, index) => {
                 const Icon = stat.icon
@@ -178,11 +178,11 @@ export function FloatingMenu({ currentView, onViewChange }: FloatingMenuProps) {
             <div className="flex items-center justify-between">
               <Button variant="ghost" size="sm" className="text-xs">
                 <Settings className="w-3 h-3 mr-1" />
-                設定
+                Settings
               </Button>
               <Button variant="ghost" size="sm" className="text-xs">
                 <HelpCircle className="w-3 h-3 mr-1" />
-                ヘルプ
+                Help
               </Button>
             </div>
           </div>
