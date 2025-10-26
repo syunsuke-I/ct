@@ -63,16 +63,12 @@ export function FloatingMenu({ currentView, onViewChange }: FloatingMenuProps) {
       label: "Practice",
       icon: Play,
       description: "Start chord tone quiz",
-      color: "text-blue-600",
-      bgColor: "bg-blue-50 hover:bg-blue-100",
     },
     {
       id: "analytics",
       label: "Analytics",
       icon: BarChart3,
       description: "View learning data & progress",
-      color: "text-green-600",
-      bgColor: "bg-green-50 hover:bg-green-100",
     },
   ]
 
@@ -134,22 +130,22 @@ export function FloatingMenu({ currentView, onViewChange }: FloatingMenuProps) {
                   variant="ghost"
                   onClick={() => handleMenuItemClick(item.id as "practice" | "analytics")}
                   className={`w-full h-auto p-3 sm:p-4 justify-start ${
-                    isActive ? "bg-primary/10 border-primary/20 border" : item.bgColor
+                    isActive ? "bg-muted" : ""
                   } transition-all duration-200`}
                 >
                   <div className="flex items-center space-x-2 sm:space-x-3 w-full">
                     <div
                       className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg ${
-                        isActive ? "bg-primary/20" : "bg-white"
+                        isActive ? "bg-muted" : "bg-muted/50"
                       } flex items-center justify-center`}
                     >
-                      <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${isActive ? "text-primary" : item.color}`} />
+                      <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${isActive ? "text-foreground" : "text-muted-foreground"}`} />
                     </div>
                     <div className="flex-1 text-left">
                       <div className="font-medium text-xs sm:text-sm">{item.label}</div>
                       <div className="text-xs text-muted-foreground hidden sm:block">{item.description}</div>
                     </div>
-                    {isActive && <div className="w-2 h-2 rounded-full bg-primary"></div>}
+                    {isActive && <div className="w-2 h-2 rounded-full bg-foreground"></div>}
                   </div>
                 </Button>
               )
