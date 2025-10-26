@@ -441,10 +441,6 @@ export const loadMockData = () => {
 }
 
 export const clearAllData = () => {
-  if (process.env.NODE_ENV !== "development") {
-    console.warn("⚠️ データクリアは開発環境でのみ利用可能です")
-    return
-  }
   try {
     localStorage.removeItem(STORAGE_KEY)
     console.log("✅ 全データをクリアしました")

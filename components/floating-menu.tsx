@@ -7,8 +7,8 @@ import { Menu, X, BarChart3, Play, Settings, HelpCircle, Trophy, TrendingUp, Cal
 import { getStoredData, getWeeklyActivityData } from "@/lib/storage"
 
 interface FloatingMenuProps {
-  currentView: "practice" | "analytics"
-  onViewChange: (view: "practice" | "analytics") => void
+  currentView: "practice" | "analytics" | "settings"
+  onViewChange: (view: "practice" | "analytics" | "settings") => void
 }
 
 export function FloatingMenu({ currentView, onViewChange }: FloatingMenuProps) {
@@ -79,7 +79,7 @@ export function FloatingMenu({ currentView, onViewChange }: FloatingMenuProps) {
     { icon: Target, label: "Total accuracy", value: `${stats.totalAccuracy}%` },
   ]
 
-  const handleMenuItemClick = (viewId: "practice" | "analytics") => {
+  const handleMenuItemClick = (viewId: "practice" | "analytics" | "settings") => {
     onViewChange(viewId)
     setIsOpen(false)
   }
@@ -171,16 +171,15 @@ export function FloatingMenu({ currentView, onViewChange }: FloatingMenuProps) {
 
           {/* フッター */}
           <div className="border-t pt-3 sm:pt-4 mt-3 sm:mt-4">
-            <div className="flex items-center justify-between">
-              <Button variant="ghost" size="sm" className="text-xs">
-                <Settings className="w-3 h-3 mr-1" />
-                Settings
-              </Button>
-              <Button variant="ghost" size="sm" className="text-xs">
-                <HelpCircle className="w-3 h-3 mr-1" />
-                Help
-              </Button>
-            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full text-xs justify-start"
+              onClick={() => handleMenuItemClick("settings")}
+            >
+              <Settings className="w-3 h-3 mr-1" />
+              Settings
+            </Button>
           </div>
         </Card>
       </div>
