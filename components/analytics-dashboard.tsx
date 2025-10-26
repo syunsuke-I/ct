@@ -384,6 +384,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                         <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
                         <PolarAngleAxis dataKey="root" tick={{ fontSize: 10 }} />
                         <PolarGrid />
+                        <PolarRadiusAxis domain={[0, 100]} tick={{ fontSize: 8 }} />
                         <Radar
                           dataKey="accuracy"
                           fill="var(--color-accuracy)"
@@ -422,10 +423,11 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                       }}
                       className="mx-auto aspect-square max-h-[250px] w-full max-w-[250px]"
                     >
-                      <RadarChart data={rootWeaknesses.map((w) => ({ root: w.name, speed: (w.avgResponseTime / 1000).toFixed(2) }))} margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
+                      <RadarChart data={rootWeaknesses.map((w) => ({ root: w.name, speed: Number((w.avgResponseTime / 1000).toFixed(2)) }))} margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
                         <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
                         <PolarAngleAxis dataKey="root" tick={{ fontSize: 10 }} />
                         <PolarGrid />
+                        <PolarRadiusAxis domain={[0, 'auto']} tick={{ fontSize: 8 }} />
                         <Radar
                           dataKey="speed"
                           fill="var(--color-speed)"
@@ -468,6 +470,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                         <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
                         <PolarAngleAxis dataKey="type" tick={{ fontSize: 10 }} />
                         <PolarGrid />
+                        <PolarRadiusAxis domain={[0, 100]} tick={{ fontSize: 8 }} />
                         <Radar
                           dataKey="accuracy"
                           fill="var(--color-accuracy)"
@@ -506,10 +509,11 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                       }}
                       className="mx-auto aspect-square max-h-[250px] w-full max-w-[250px]"
                     >
-                      <RadarChart data={chordTypeWeaknesses.map((w) => ({ type: w.name, speed: (w.avgResponseTime / 1000).toFixed(2) }))} margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
+                      <RadarChart data={chordTypeWeaknesses.map((w) => ({ type: w.name, speed: Number((w.avgResponseTime / 1000).toFixed(2)) }))} margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
                         <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
                         <PolarAngleAxis dataKey="type" tick={{ fontSize: 10 }} />
                         <PolarGrid />
+                        <PolarRadiusAxis domain={[0, 'auto']} tick={{ fontSize: 8 }} />
                         <Radar
                           dataKey="speed"
                           fill="var(--color-speed)"
@@ -554,6 +558,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                         <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
                         <PolarAngleAxis dataKey="interval" tick={{ fontSize: 10 }} />
                         <PolarGrid />
+                        <PolarRadiusAxis domain={[0, 100]} tick={{ fontSize: 8 }} />
                         <Radar
                           dataKey="accuracy"
                           fill="var(--color-accuracy)"
@@ -592,10 +597,11 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                       }}
                       className="mx-auto aspect-square max-h-[250px] w-full max-w-[250px]"
                     >
-                      <RadarChart data={intervalWeaknesses.map((w) => ({ interval: w.name, speed: (w.avgResponseTime / 1000).toFixed(2) }))} margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
+                      <RadarChart data={intervalWeaknesses.map((w) => ({ interval: w.name, speed: Number((w.avgResponseTime / 1000).toFixed(2)) }))} margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
                         <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
                         <PolarAngleAxis dataKey="interval" tick={{ fontSize: 10 }} />
                         <PolarGrid />
+                        <PolarRadiusAxis domain={[0, 'auto']} tick={{ fontSize: 8 }} />
                         <Radar
                           dataKey="speed"
                           fill="var(--color-speed)"
