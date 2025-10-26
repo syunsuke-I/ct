@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { toast } from "sonner"
 import { Toaster } from "@/components/ui/sonner"
-import { Music, RotateCcw, Trophy, TrendingUp, AlertCircle } from "lucide-react"
+import { Music, RotateCcw, Trophy, TrendingUp, AlertCircle, Clock, X } from "lucide-react"
 import { saveSessionData, type SessionData } from "@/lib/storage"
 
 const CHORD_TONES = {
@@ -73,6 +73,23 @@ const CHORD_TONES = {
 
 const TONE_NAMES = ["3rd", "5th", "7th"]
 
+// コード名を整形する関数（bや#を上付き文字にする）
+const formatChordName = (chord: string) => {
+  // ルート音とそれ以降を分離
+  const match = chord.match(/^([A-G])([b#]?)(.*)$/)
+  if (!match) return chord
+
+  const [, root, accidental, suffix] = match
+
+  return (
+    <>
+      {root}
+      {accidental && <sup className="text-[0.6em]">{accidental}</sup>}
+      {suffix}
+    </>
+  )
+}
+
 type Question = {
   chord: string
   tonePosition: number
@@ -89,7 +106,11 @@ type QuestionResult = {
   responseTime: number
 }
 
-export function MusicPracticeApp() {
+interface MusicPracticeAppProps {
+  onExit?: () => void
+}
+
+export function MusicPracticeApp({ onExit }: MusicPracticeAppProps) {
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null)
   const [questionNumber, setQuestionNumber] = useState(1)
   const [score, setScore] = useState(0)
@@ -98,7 +119,9 @@ export function MusicPracticeApp() {
   const [isComplete, setIsComplete] = useState(false)
   const [questions, setQuestions] = useState<Question[]>([])
   const [results, setResults] = useState<QuestionResult[]>([])
-  const [sessionId] = useState(() => `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`)
+  const [sessionId] = useState(() => `session-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`)
+  const [elapsedTime, setElapsedTime] = useState(0)
+  const [answeredTime, setAnsweredTime] = useState<number | null>(null)
 
   // 選択肢を生成する関数
   const generateOptions = (correctAnswer: string): string[] => {
@@ -143,26 +166,31 @@ export function MusicPracticeApp() {
   const startNewSession = () => {
     const newQuestions = Array.from({ length: 10 }, () => generateQuestion())
     setQuestions(newQuestions)
-    setCurrentQuestion(newQuestions[0])
+    const firstQuestion = { ...newQuestions[0], startTime: Date.now() }
+    setCurrentQuestion(firstQuestion)
     setQuestionNumber(1)
     setScore(0)
     setSelectedAnswer("")
     setShowResult(false)
     setIsComplete(false)
     setResults([])
+    setElapsedTime(0)
+    setAnsweredTime(null)
   }
 
   // 答えを確認
-  const checkAnswer = () => {
-    if (!currentQuestion || !selectedAnswer) return
+  const checkAnswer = (answer: string) => {
+    if (!currentQuestion || showResult) return
 
-    const isCorrect = selectedAnswer === currentQuestion.answer
+    const isCorrect = answer === currentQuestion.answer
     const responseTime = Date.now() - currentQuestion.startTime
+    setAnsweredTime(responseTime)
+    setSelectedAnswer(answer)
     setShowResult(true)
 
     const result: QuestionResult = {
       question: currentQuestion,
-      userAnswer: selectedAnswer,
+      userAnswer: answer,
       isCorrect: isCorrect,
       responseTime: responseTime,
     }
@@ -186,25 +214,27 @@ export function MusicPracticeApp() {
       })
     }
 
-    setTimeout(() => {
-      if (questionNumber < 10) {
-        setCurrentQuestion(questions[questionNumber])
-        setQuestionNumber(questionNumber + 1)
-        setSelectedAnswer("")
-        setShowResult(false)
-      } else {
-        const sessionData: SessionData = {
-          id: sessionId,
-          date: new Date().toISOString(),
-          score: score + (isCorrect ? 1 : 0),
-          totalQuestions: 10,
-          results: [...results, result],
-          averageResponseTime: [...results, result].reduce((sum, r) => sum + r.responseTime, 0) / 10,
-        }
-        saveSessionData(sessionData)
-        setIsComplete(true)
+    // 即座に次の問題へ移行
+    if (questionNumber < 10) {
+      const nextQuestion = { ...questions[questionNumber], startTime: Date.now() }
+      setCurrentQuestion(nextQuestion)
+      setQuestionNumber(questionNumber + 1)
+      setSelectedAnswer("")
+      setShowResult(false)
+      setElapsedTime(0)
+      setAnsweredTime(null)
+    } else {
+      const sessionData: SessionData = {
+        id: sessionId,
+        date: new Date().toISOString(),
+        score: score + (isCorrect ? 1 : 0),
+        totalQuestions: 10,
+        results: [...results, result],
+        averageResponseTime: [...results, result].reduce((sum, r) => sum + r.responseTime, 0) / 10,
       }
-    }, 2000)
+      saveSessionData(sessionData)
+      setIsComplete(true)
+    }
   }
 
   const getDetailedStats = () => {
@@ -249,7 +279,7 @@ export function MusicPracticeApp() {
     }
   }
 
-  const getAdvice = (stats: ReturnType<typeof getDetailedStats>) => {
+  const getAdvice = () => {
     const percentage = (score / 10) * 100
 
     if (percentage >= 90) return "素晴らしい！コードトーンの理解が深まっています。"
@@ -258,6 +288,19 @@ export function MusicPracticeApp() {
     return "基礎から復習することをお勧めします。焦らず一歩ずつ進めましょう。"
   }
 
+  // リアルタイム経過時間更新
+  useEffect(() => {
+    if (!currentQuestion || showResult) {
+      return
+    }
+
+    const timer = setInterval(() => {
+      setElapsedTime(Date.now() - currentQuestion.startTime)
+    }, 100)
+
+    return () => clearInterval(timer)
+  }, [currentQuestion, showResult])
+
   // 初期化
   useEffect(() => {
     startNewSession()
@@ -265,7 +308,7 @@ export function MusicPracticeApp() {
 
   if (isComplete) {
     const stats = getDetailedStats()
-    const advice = getAdvice(stats)
+    const advice = getAdvice()
 
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
@@ -380,13 +423,13 @@ export function MusicPracticeApp() {
                 {stats.incorrectAnswers.map((result, index) => (
                   <div key={index} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg text-sm">
                     <div>
-                      <span className="font-mono font-semibold">{result.question.chord}</span>
+                      <span className="font-mono font-semibold">{formatChordName(result.question.chord)}</span>
                       <span className="text-muted-foreground ml-2">の{result.question.toneName}</span>
                       <span className="text-muted-foreground ml-2">({(result.responseTime / 1000).toFixed(1)}秒)</span>
                     </div>
-                    <div className="text-right">
-                      <div className="text-red-600">あなたの回答: {result.userAnswer}</div>
-                      <div className="text-green-600">正解: {result.question.answer}</div>
+                    <div className="text-right font-mono">
+                      <div className="text-red-600">あなたの回答: {formatChordName(result.userAnswer)}</div>
+                      <div className="text-green-600">正解: {formatChordName(result.question.answer)}</div>
                     </div>
                   </div>
                 ))}
@@ -416,7 +459,20 @@ export function MusicPracticeApp() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="w-full max-w-lg p-8 animate-fade-in">
+      <Card className="w-full max-w-lg p-8 animate-fade-in relative">
+        {/* 中断ボタン */}
+        {onExit && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onExit}
+            className="absolute top-4 right-4 w-8 h-8"
+            aria-label="中断"
+          >
+            <X className="w-4 h-4" />
+          </Button>
+        )}
+
         {/* ヘッダー */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
@@ -433,20 +489,41 @@ export function MusicPracticeApp() {
         </div>
 
         {/* 問題 */}
-        <div className="text-center mb-8">
-          <div className="mb-6">
-            <div className="text-4xl font-bold mb-2 font-mono">{currentQuestion.chord}</div>
-            <p className="text-lg text-muted-foreground">の{currentQuestion.toneName}は？</p>
+        <div className="mb-8 relative">
+          {/* 現在の問題（中央） */}
+          <div className="text-center">
+            <div className="mb-6">
+              <div className="text-4xl font-bold mb-2 font-mono">{formatChordName(currentQuestion.chord)}</div>
+              <p className="text-lg text-muted-foreground">の{currentQuestion.toneName}は？</p>
+            </div>
+
+            {/* 時間表示 */}
+            <div className="flex items-center justify-center gap-2 text-sm">
+              <Clock className="w-4 h-4 text-muted-foreground" />
+              <span className={`font-mono ${showResult ? "text-muted-foreground" : "text-foreground font-semibold"}`}>
+                {showResult && answeredTime !== null
+                  ? `${(answeredTime / 1000).toFixed(1)}秒`
+                  : `${(elapsedTime / 1000).toFixed(1)}秒`}
+              </span>
+            </div>
           </div>
+
+          {/* 次の問題プレビュー（右側・薄く） */}
+          {questionNumber < 10 && !showResult && (
+            <div className="absolute right-16 top-8 opacity-25 text-right">
+              <div className="text-lg font-mono">{formatChordName(questions[questionNumber].chord)}</div>
+              <p className="text-xs">{questions[questionNumber].toneName}</p>
+            </div>
+          )}
         </div>
 
-        <div className="grid grid-cols-2 gap-3 mb-8">
+        <div className="grid grid-cols-2 gap-3">
           {currentQuestion.options.map((option) => (
             <Button
               key={option}
               variant={selectedAnswer === option ? "default" : "outline"}
               size="lg"
-              onClick={() => !showResult && setSelectedAnswer(option)}
+              onClick={() => checkAnswer(option)}
               disabled={showResult}
               className={`h-16 text-lg font-mono transition-all duration-200 ${
                 showResult && option === currentQuestion.answer
@@ -456,21 +533,17 @@ export function MusicPracticeApp() {
                     : ""
               }`}
             >
-              {option}
+              {formatChordName(option)}
             </Button>
           ))}
         </div>
 
-        {/* アクションボタン */}
-        <div className="text-center">
-          {!showResult ? (
-            <Button onClick={checkAnswer} disabled={!selectedAnswer} size="lg" className="w-full">
-              答えを確認
-            </Button>
-          ) : (
+        {/* 結果表示 */}
+        {showResult && (
+          <div className="text-center mt-4">
             <div className="text-sm text-muted-foreground">次の問題まで...</div>
-          )}
-        </div>
+          </div>
+        )}
       </Card>
       <Toaster />
     </div>

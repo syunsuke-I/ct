@@ -181,14 +181,308 @@ export const getTopWeaknesses = (type: "chord" | "root" | "interval", limit = 5)
       break
   }
 
+  // 各キーの平均解答時間を計算
+  const avgResponseTimes: Record<string, number> = {}
+  stats.sessions.forEach((session) => {
+    session.results.forEach((result) => {
+      let key: string
+      switch (type) {
+        case "chord":
+          key = result.question.chord
+          break
+        case "root":
+          key = extractRoot(result.question.chord)
+          break
+        case "interval":
+          key = result.question.toneName
+          break
+      }
+      if (!avgResponseTimes[key]) {
+        avgResponseTimes[key] = 0
+      }
+      avgResponseTimes[key] += result.responseTime
+    })
+  })
+
+  Object.keys(avgResponseTimes).forEach((key) => {
+    if (weaknesses[key]) {
+      avgResponseTimes[key] = avgResponseTimes[key] / weaknesses[key].total
+    }
+  })
+
   return Object.entries(weaknesses)
-    .filter(([_, data]) => data.total >= 3) // 最低3回は出題されたもののみ
+    .filter(([, data]) => data.total >= 3) // 最低3回は出題されたもののみ
     .map(([key, data]) => ({
       name: key,
       accuracy: (data.correct / data.total) * 100,
       total: data.total,
       correct: data.correct,
+      avgResponseTime: avgResponseTimes[key] || 0,
     }))
     .sort((a, b) => a.accuracy - b.accuracy) // 正答率の低い順
     .slice(0, limit)
+}
+
+// コードタイプを抽出する関数
+const getChordType = (chord: string): string => {
+  if (chord.includes("m7-5")) return "m7-5"
+  if (chord.includes("m7")) return "m7"
+  if (chord.includes("7")) return "7"
+  if (chord.includes("m")) return "m"
+  return "Major"
+}
+
+// コードタイプ別の弱点を取得
+export const getChordTypeWeaknesses = () => {
+  const stats = getStoredData()
+  const typeStats: Record<string, { total: number; correct: number }> = {}
+  const avgResponseTimes: Record<string, number> = {}
+
+  // コードタイプ別に集計
+  Object.entries(stats.chordWeaknesses).forEach(([chord, data]) => {
+    const type = getChordType(chord)
+    if (!typeStats[type]) {
+      typeStats[type] = { total: 0, correct: 0 }
+    }
+    typeStats[type].total += data.total
+    typeStats[type].correct += data.correct
+  })
+
+  // 平均解答時間を計算
+  stats.sessions.forEach((session) => {
+    session.results.forEach((result) => {
+      const type = getChordType(result.question.chord)
+      if (!avgResponseTimes[type]) {
+        avgResponseTimes[type] = 0
+      }
+      avgResponseTimes[type] += result.responseTime
+    })
+  })
+
+  Object.keys(avgResponseTimes).forEach((type) => {
+    if (typeStats[type]) {
+      avgResponseTimes[type] = avgResponseTimes[type] / typeStats[type].total
+    }
+  })
+
+  return Object.entries(typeStats)
+    .filter(([, data]) => data.total >= 3) // 最低3回は出題されたもののみ
+    .map(([type, data]) => ({
+      name: type,
+      accuracy: (data.correct / data.total) * 100,
+      total: data.total,
+      correct: data.correct,
+      avgResponseTime: avgResponseTimes[type] || 0,
+    }))
+    .sort((a, b) => a.accuracy - b.accuracy) // 正答率の低い順
+}
+
+// モックデータ生成（開発・テスト用）
+export const generateMockData = (): UserStats => {
+  const chords = ["C", "D", "E", "F", "G", "A", "B", "Cm", "Dm", "Em", "Fm", "Gm", "Am", "C7", "D7", "E7", "F7", "G7", "A7", "Cm7", "Dm7", "Em7", "Cm7-5", "Dm7-5"]
+  const toneNames = ["3rd", "5th", "7th"]
+  const sessions: SessionData[] = []
+
+  // 個人差のあるパラメータ（リアルさを出すため）
+  const weakChordTypes = ["m7-5", "Cm7"] // 苦手なコードタイプ
+  const weakRoots = ["F", "B"] // 苦手なルート音
+  const weakInterval = "7th" // 苦手な音程
+
+  // 過去90日分のセッションを生成（3ヶ月）
+  for (let day = 90; day >= 0; day--) {
+    const date = new Date()
+    date.setDate(date.getDate() - day)
+    const dayOfWeek = date.getDay() // 0=日曜, 6=土曜
+
+    // 学習進捗度（日が経つにつれて上達）
+    const progressRate = 1 - (day / 90) * 0.4 // 90日前は60%、現在は100%の進捗
+
+    // 曜日によって学習頻度を変える
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+    const skipProbability = isWeekend ? 0.3 : 0.4 // 週末の方が学習する確率が高い
+
+    // ランダムに学習しない日を作る
+    if (Math.random() < skipProbability) continue
+
+    // 1日のセッション数（週末や休日は多め）
+    const maxSessions = isWeekend ? 4 : 2
+    const sessionsPerDay = Math.floor(Math.random() * maxSessions) + 1
+
+    for (let i = 0; i < sessionsPerDay; i++) {
+      const results: QuestionResult[] = []
+      let correctCount = 0
+
+      // 10問生成
+      for (let q = 0; q < 10; q++) {
+        const chord = chords[Math.floor(Math.random() * chords.length)]
+        const toneName = toneNames[Math.floor(Math.random() * toneNames.length)]
+        const root = extractRoot(chord)
+
+        // 基本正答率（学習進捗に応じて上昇）
+        let baseAccuracy = 0.5 + (progressRate * 0.3) // 50%→80%に上昇
+
+        // 苦手な要素がある場合は正答率を下げる
+        if (weakChordTypes.some(weak => chord.includes(weak))) baseAccuracy -= 0.15
+        if (weakRoots.includes(root)) baseAccuracy -= 0.1
+        if (toneName === weakInterval) baseAccuracy -= 0.1
+
+        // ランダム要素を追加（±15%）
+        const accuracy = Math.max(0.2, Math.min(0.95, baseAccuracy + (Math.random() - 0.5) * 0.3))
+        const isCorrect = Math.random() < accuracy
+
+        if (isCorrect) correctCount++
+
+        // 回答時間も学習進捗に応じて短縮（6秒→2.5秒）
+        const baseResponseTime = 6000 - (progressRate * 3500)
+
+        // 苦手な要素は時間がかかる
+        let responseMultiplier = 1.0
+        if (weakChordTypes.some(weak => chord.includes(weak))) responseMultiplier += 0.3
+        if (weakRoots.includes(root)) responseMultiplier += 0.2
+        if (toneName === weakInterval) responseMultiplier += 0.2
+
+        // 不正解の場合は時間がかかる傾向
+        if (!isCorrect) responseMultiplier += 0.4
+
+        const responseTime = Math.floor(baseResponseTime * responseMultiplier + (Math.random() - 0.5) * 1000)
+
+        results.push({
+          question: {
+            chord,
+            tonePosition: toneNames.indexOf(toneName) + 1,
+            toneName,
+            answer: "C",
+            options: ["C", "D", "E", "F"],
+            startTime: date.getTime(),
+          },
+          userAnswer: isCorrect ? "C" : ["D", "E", "F"][Math.floor(Math.random() * 3)],
+          isCorrect,
+          responseTime: Math.max(800, Math.min(12000, responseTime)), // 0.8秒〜12秒
+        })
+      }
+
+      const sessionTime = new Date(date)
+      // 時間帯もリアルに（朝7時〜夜11時）
+      const hour = Math.floor(Math.random() * 16) + 7
+      sessionTime.setHours(hour, Math.floor(Math.random() * 60))
+
+      sessions.push({
+        id: `mock-${date.toISOString()}-${i}`,
+        date: sessionTime.toISOString(),
+        score: correctCount,
+        totalQuestions: 10,
+        results,
+        averageResponseTime: results.reduce((sum, r) => sum + r.responseTime, 0) / 10,
+      })
+    }
+  }
+
+  // 統計を計算
+  const stats: UserStats = {
+    totalSessions: sessions.length,
+    totalQuestions: sessions.length * 10,
+    totalCorrect: sessions.reduce((sum, s) => sum + s.score, 0),
+    averageScore: (sessions.reduce((sum, s) => sum + s.score, 0) / (sessions.length * 10)) * 100,
+    averageResponseTime: sessions.reduce((sum, s) => sum + s.averageResponseTime, 0) / sessions.length,
+    chordWeaknesses: {},
+    rootWeaknesses: {},
+    intervalWeaknesses: {},
+    weeklyActivity: {},
+    sessions,
+  }
+
+  // コード別、ルート音別、音程別の統計を計算
+  sessions.forEach((session) => {
+    const dateKey = session.date.split("T")[0]
+    stats.weeklyActivity[dateKey] = (stats.weeklyActivity[dateKey] || 0) + 1
+
+    session.results.forEach((result) => {
+      const chord = result.question.chord
+      const root = extractRoot(chord)
+      const interval = result.question.toneName
+
+      if (!stats.chordWeaknesses[chord]) {
+        stats.chordWeaknesses[chord] = { total: 0, correct: 0 }
+      }
+      stats.chordWeaknesses[chord].total++
+      if (result.isCorrect) stats.chordWeaknesses[chord].correct++
+
+      if (!stats.rootWeaknesses[root]) {
+        stats.rootWeaknesses[root] = { total: 0, correct: 0 }
+      }
+      stats.rootWeaknesses[root].total++
+      if (result.isCorrect) stats.rootWeaknesses[root].correct++
+
+      if (!stats.intervalWeaknesses[interval]) {
+        stats.intervalWeaknesses[interval] = { total: 0, correct: 0 }
+      }
+      stats.intervalWeaknesses[interval].total++
+      if (result.isCorrect) stats.intervalWeaknesses[interval].correct++
+    })
+  })
+
+  return stats
+}
+
+export const loadMockData = () => {
+  const mockData = generateMockData()
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(mockData))
+    console.log("✅ モックデータを読み込みました:", mockData)
+    return mockData
+  } catch (error) {
+    console.error("❌ モックデータの保存に失敗しました:", error)
+    return null
+  }
+}
+
+export const clearAllData = () => {
+  try {
+    localStorage.removeItem(STORAGE_KEY)
+    console.log("✅ 全データをクリアしました")
+  } catch (error) {
+    console.error("❌ データのクリアに失敗しました:", error)
+  }
+}
+
+// カレンダーヒートマップ用のデータを取得（過去90日）
+export const getHeatmapData = () => {
+  const stats = getStoredData()
+  const today = new Date()
+  const heatmapData: Array<{
+    date: string
+    dateObj: Date
+    sessions: number
+    accuracy: number
+    totalQuestions: number
+    correctAnswers: number
+  }> = []
+
+  // 過去90日分のデータを生成
+  for (let i = 89; i >= 0; i--) {
+    const date = new Date(today)
+    date.setDate(date.getDate() - i)
+    const dateString = date.toISOString().split("T")[0]
+
+    // その日のセッションを取得
+    const daySessions = stats.sessions.filter((session) => {
+      const sessionDate = new Date(session.date).toISOString().split("T")[0]
+      return sessionDate === dateString
+    })
+
+    const totalQuestions = daySessions.reduce((sum, s) => sum + s.totalQuestions, 0)
+    const correctAnswers = daySessions.reduce((sum, s) => sum + s.score, 0)
+    const accuracy = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0
+
+    heatmapData.push({
+      date: dateString,
+      dateObj: date,
+      sessions: daySessions.length,
+      accuracy,
+      totalQuestions,
+      correctAnswers,
+    })
+  }
+
+  return heatmapData
 }
