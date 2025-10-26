@@ -102,10 +102,10 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
 
   // チャート用データの準備
   const sessionChartData = recentSessions.map((session, index) => ({
-    session: `セッション${recentSessions.length - index}`,
+    session: `Session ${recentSessions.length - index}`,
     score: (session.score / session.totalQuestions) * 100,
     responseTime: session.averageResponseTime / 1000,
-    date: new Date(session.date).toLocaleDateString("ja-JP", { month: "short", day: "numeric" }),
+    date: new Date(session.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
   }))
 
   const chordTypeWeaknesses = getChordTypeWeaknesses()
@@ -119,7 +119,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
   }))
 
   const weeklyActivityChart = weeklyData.map((day, index) => ({
-    date: new Date(day.date).toLocaleDateString("ja-JP", { weekday: "short" }),
+    date: new Date(day.date).toLocaleDateString("en-US", { weekday: "short" }),
     sessions: day.sessions,
     fullDate: day.date,
     fill: `var(--color-day-${index + 1})`,
@@ -131,7 +131,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
 
     stats.sessions.forEach((session) => {
       const date = new Date(session.date)
-      const dateKey = date.toLocaleDateString("ja-JP", { month: "short", day: "numeric" })
+      const dateKey = date.toLocaleDateString("en-US", { month: "short", day: "numeric" })
       const existing = sessionsByDate.get(dateKey)
 
       if (existing) {
@@ -202,16 +202,15 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold flex items-center">
               <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3 text-primary" />
-              学習アナリティクス
+              Analytics
             </h1>
-            <p className="text-sm sm:text-base text-muted-foreground mt-1">あなたの音楽学習の進歩を詳しく分析</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="outline" className="text-xs sm:text-sm">
-              総セッション数: {stats.totalSessions}
+              {stats.totalSessions} sessions
             </Badge>
             <Badge variant="outline" className="text-xs sm:text-sm">
-              総問題数: {stats.totalQuestions}
+              {stats.totalQuestions} questions
             </Badge>
           </div>
         </div>
@@ -220,7 +219,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium">総合正答率</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium">Accuracy</CardTitle>
               <Target className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -231,43 +230,43 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                 ) : progressTrend < 0 ? (
                   <TrendingDown className="h-3 w-3 mr-1 text-red-500" />
                 ) : null}
-                {progressTrend !== 0 && `${Math.abs(progressTrend)}問の変化`}
+                {progressTrend !== 0 && `${Math.abs(progressTrend > 0 ? '+' : '')}${progressTrend}`}
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium">平均回答時間</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium">Avg time</CardTitle>
               <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-lg sm:text-2xl font-bold">{(stats.averageResponseTime / 1000).toFixed(1)}秒</div>
-              <p className="text-xs text-muted-foreground">全{stats.totalQuestions}問の平均</p>
+              <div className="text-lg sm:text-2xl font-bold">{(stats.averageResponseTime / 1000).toFixed(1)}s</div>
+              <p className="text-xs text-muted-foreground">{stats.totalQuestions} questions</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium">今週の活動</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium">This week</CardTitle>
               <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-lg sm:text-2xl font-bold">
                 {weeklyData.reduce((sum, day) => sum + day.sessions, 0)}
               </div>
-              <p className="text-xs text-muted-foreground">セッション数</p>
+              <p className="text-xs text-muted-foreground">sessions</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium">学習ストリーク</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium">Streak</CardTitle>
               <Award className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-lg sm:text-2xl font-bold">{learningStreak}日</div>
-              <p className="text-xs text-muted-foreground">連続学習日数</p>
+              <div className="text-lg sm:text-2xl font-bold">{learningStreak}</div>
+              <p className="text-xs text-muted-foreground">days</p>
             </CardContent>
           </Card>
         </div>
@@ -276,16 +275,16 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
         <Tabs defaultValue="progress" className="space-y-4">
           <TabsList className="grid w-full grid-cols-4 h-auto">
             <TabsTrigger value="progress" className="text-xs sm:text-sm px-2 py-2">
-              進歩
+              Progress
             </TabsTrigger>
             <TabsTrigger value="weaknesses" className="text-xs sm:text-sm px-2 py-2">
-              弱点分析
+              Weaknesses
             </TabsTrigger>
             <TabsTrigger value="activity" className="text-xs sm:text-sm px-2 py-2">
-              活動履歴
+              Activity
             </TabsTrigger>
             <TabsTrigger value="detailed" className="text-xs sm:text-sm px-2 py-2">
-              詳細統計
+              Summary
             </TabsTrigger>
           </TabsList>
 
@@ -295,16 +294,16 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                 <CardHeader>
                   <CardTitle className="flex items-center text-sm sm:text-base">
                     <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                    スコアの推移
+                    Score trend
                   </CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">最近10セッションの正答率</CardDescription>
+                  <CardDescription className="text-xs sm:text-sm">Last 10 sessions</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {sessionChartData.length > 0 ? (
                     <ChartContainer
                       config={{
                         score: {
-                          label: "正答率",
+                          label: "Accuracy",
                           color: "hsl(221.2 83.2% 53.3%)",
                         },
                       }}
@@ -321,7 +320,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                     <div className="h-[250px] flex items-center justify-center text-muted-foreground">
                       <div className="text-center">
                         <TrendingUp className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                        <p className="text-sm">データがありません</p>
+                        <p className="text-sm">No data</p>
                       </div>
                     </div>
                   )}
@@ -332,15 +331,15 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                 <CardHeader>
                   <CardTitle className="flex items-center text-sm sm:text-base">
                     <Clock className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                    回答時間の推移
+                    Response time
                   </CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">平均回答時間の変化</CardDescription>
+                  <CardDescription className="text-xs sm:text-sm">Average per session</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ChartContainer
                     config={{
                       responseTime: {
-                        label: "平均回答時間",
+                        label: "Avg response time",
                         color: "hsl(221.2 83.2% 53.3%)",
                       },
                     }}
@@ -365,16 +364,16 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                 <CardHeader>
                   <CardTitle className="flex items-center text-sm sm:text-base">
                     <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-orange-500" />
-                    ルート音別正答率
+                    Root accuracy
                   </CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">各ルート音の正答率（最低3回出題）</CardDescription>
+                  <CardDescription className="text-xs sm:text-sm">By root note (min. 3 attempts)</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {rootWeaknesses.length > 0 ? (
                     <ChartContainer
                       config={{
                         accuracy: {
-                          label: "正答率 (%)",
+                          label: "Accuracy (%)",
                           color: "hsl(221.2 83.2% 53.3%)",
                         },
                       }}
@@ -396,28 +395,27 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                     <div className="h-[250px] flex items-center justify-center text-muted-foreground">
                       <div className="text-center">
                         <AlertTriangle className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                        <p className="text-sm">データがありません</p>
+                        <p className="text-sm">No data</p>
                       </div>
                     </div>
                   )}
                 </CardContent>
               </Card>
 
-              {/* ルート音別解答速度 */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center text-sm sm:text-base">
                     <Clock className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-orange-500" />
-                    ルート音別解答速度
+                    Root speed
                   </CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">各ルート音の平均解答時間（秒）</CardDescription>
+                  <CardDescription className="text-xs sm:text-sm">Avg response time (seconds)</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {rootWeaknesses.length > 0 ? (
                     <ChartContainer
                       config={{
                         speed: {
-                          label: "解答時間 (秒)",
+                          label: "Response time (s)",
                           color: "hsl(221.2 83.2% 53.3%)",
                         },
                       }}
@@ -439,28 +437,27 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                     <div className="h-[250px] flex items-center justify-center text-muted-foreground">
                       <div className="text-center">
                         <Clock className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                        <p className="text-sm">データがありません</p>
+                        <p className="text-sm">No data</p>
                       </div>
                     </div>
                   )}
                 </CardContent>
               </Card>
 
-              {/* コードタイプ別正答率 */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center text-sm sm:text-base">
                     <Music className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-500" />
-                    コードタイプ別正答率
+                    Chord type accuracy
                   </CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">各コードタイプの正答率（最低3回出題）</CardDescription>
+                  <CardDescription className="text-xs sm:text-sm">By chord type (min. 3 attempts)</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {chordTypeWeaknesses.length > 0 ? (
                     <ChartContainer
                       config={{
                         accuracy: {
-                          label: "正答率 (%)",
+                          label: "Accuracy (%)",
                           color: "hsl(221.2 83.2% 53.3%)",
                         },
                       }}
@@ -482,28 +479,27 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                     <div className="h-[250px] flex items-center justify-center text-muted-foreground">
                       <div className="text-center">
                         <Music className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                        <p className="text-sm">データがありません</p>
+                        <p className="text-sm">No data</p>
                       </div>
                     </div>
                   )}
                 </CardContent>
               </Card>
 
-              {/* コードタイプ別解答速度 */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center text-sm sm:text-base">
                     <Clock className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-500" />
-                    コードタイプ別解答速度
+                    Chord type speed
                   </CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">各コードタイプの平均解答時間（秒）</CardDescription>
+                  <CardDescription className="text-xs sm:text-sm">Avg response time (seconds)</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {chordTypeWeaknesses.length > 0 ? (
                     <ChartContainer
                       config={{
                         speed: {
-                          label: "解答時間 (秒)",
+                          label: "Response time (s)",
                           color: "hsl(221.2 83.2% 53.3%)",
                         },
                       }}
@@ -525,7 +521,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                     <div className="h-[250px] flex items-center justify-center text-muted-foreground">
                       <div className="text-center">
                         <Clock className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                        <p className="text-sm">データがありません</p>
+                        <p className="text-sm">No data</p>
                       </div>
                     </div>
                   )}
@@ -534,21 +530,20 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* 音程別正答率 */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center text-sm sm:text-base">
                     <Target className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-green-500" />
-                    音程別正答率
+                    Interval accuracy
                   </CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">3rd、5th、7thの正答率（最低3回出題）</CardDescription>
+                  <CardDescription className="text-xs sm:text-sm">3rd, 5th, 7th (min. 3 attempts)</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {intervalWeaknesses.length > 0 ? (
                     <ChartContainer
                       config={{
                         accuracy: {
-                          label: "正答率 (%)",
+                          label: "Accuracy (%)",
                           color: "hsl(221.2 83.2% 53.3%)",
                         },
                       }}
@@ -570,28 +565,27 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                     <div className="h-[250px] flex items-center justify-center text-muted-foreground">
                       <div className="text-center">
                         <Target className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                        <p className="text-sm">データがありません</p>
+                        <p className="text-sm">No data</p>
                       </div>
                     </div>
                   )}
                 </CardContent>
               </Card>
 
-              {/* 音程別解答速度 */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center text-sm sm:text-base">
                     <Clock className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-green-500" />
-                    音程別解答速度
+                    Interval speed
                   </CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">3rd、5th、7thの平均解答時間（秒）</CardDescription>
+                  <CardDescription className="text-xs sm:text-sm">Avg response time (seconds)</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {intervalWeaknesses.length > 0 ? (
                     <ChartContainer
                       config={{
                         speed: {
-                          label: "解答時間 (秒)",
+                          label: "Response time (s)",
                           color: "hsl(221.2 83.2% 53.3%)",
                         },
                       }}
@@ -613,7 +607,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                     <div className="h-[250px] flex items-center justify-center text-muted-foreground">
                       <div className="text-center">
                         <Clock className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                        <p className="text-sm">データがありません</p>
+                        <p className="text-sm">No data</p>
                       </div>
                     </div>
                   )}
@@ -623,14 +617,13 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
           </TabsContent>
 
           <TabsContent value="activity" className="space-y-4">
-            {/* 学習密度ヒートマップ */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center text-sm sm:text-base">
                   <Calendar className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                  学習密度カレンダー
+                  Activity heatmap
                 </CardTitle>
-                <CardDescription className="text-xs sm:text-sm">過去90日間の学習活動（色が濃いほど活発）</CardDescription>
+                <CardDescription className="text-xs sm:text-sm">Last 90 days</CardDescription>
               </CardHeader>
               <CardContent>
                 {heatmapData.length > 0 ? (
@@ -646,7 +639,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                             const weekStart = heatmapData[weekIndex * 7]
                             if (!weekStart) return null
 
-                            const monthLabel = weekStart.dateObj.toLocaleDateString("ja-JP", { month: "short" })
+                            const monthLabel = weekStart.dateObj.toLocaleDateString("en-US", { month: "short" })
                             const showMonth = weekIndex === 0 || weekStart.dateObj.getDate() <= 7
 
                             return (
@@ -663,7 +656,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                         <div key={dayOfWeek} className="flex gap-1">
                           {/* 曜日ラベル */}
                           <div className="w-8 text-xs text-muted-foreground flex items-center">
-                            {["日", "月", "火", "水", "木", "金", "土"][dayOfWeek]}
+                            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][dayOfWeek]}
                           </div>
 
                           {/* 各週のセル */}
@@ -695,13 +688,13 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
 
                       {/* 凡例 */}
                       <div className="flex items-center gap-2 mt-4 text-xs text-muted-foreground">
-                        <span>少ない</span>
+                        <span>Less</span>
                         <div className="w-3 h-3 bg-muted rounded-sm" />
                         <div className="w-3 h-3 bg-blue-300 rounded-sm" />
                         <div className="w-3 h-3 bg-blue-400 rounded-sm" />
                         <div className="w-3 h-3 bg-blue-500 rounded-sm" />
                         <div className="w-3 h-3 bg-blue-600 rounded-sm" />
-                        <span>多い</span>
+                        <span>More</span>
                       </div>
                     </div>
                   </div>
@@ -720,9 +713,9 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
               <CardHeader>
                 <CardTitle className="flex items-center text-sm sm:text-base">
                   <Activity className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                  全期間の活動推移
+                  All-time activity
                 </CardTitle>
-                <CardDescription className="text-xs sm:text-sm">全セッションの時系列推移</CardDescription>
+                <CardDescription className="text-xs sm:text-sm">Session timeline</CardDescription>
               </CardHeader>
               <CardContent>
                 {allTimeActivityData.length > 0 ? (
@@ -732,7 +725,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                       <ChartContainer
                         config={{
                           sessions: {
-                            label: "セッション数",
+                            label: "Sessions",
                             color: "hsl(221.2 83.2% 53.3%)",
                           },
                         }}
@@ -750,11 +743,11 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                     {/* Summary Statistics */}
                     <div className="lg:w-48 flex lg:flex-col gap-3 lg:gap-4 justify-between lg:justify-start">
                       <div className="flex-1 lg:flex-none">
-                        <div className="text-xs text-muted-foreground mb-1">総セッション数</div>
+                        <div className="text-xs text-muted-foreground mb-1">Total</div>
                         <div className="text-2xl font-bold text-primary">{stats.totalSessions}</div>
                       </div>
                       <div className="flex-1 lg:flex-none">
-                        <div className="text-xs text-muted-foreground mb-1">平均/日</div>
+                        <div className="text-xs text-muted-foreground mb-1">Avg/day</div>
                         <div className="text-2xl font-bold">
                           {allTimeActivityData.length > 0
                             ? (stats.totalSessions / allTimeActivityData.length).toFixed(1)
@@ -762,13 +755,13 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                         </div>
                       </div>
                       <div className="flex-1 lg:flex-none">
-                        <div className="text-xs text-muted-foreground mb-1">最多/日</div>
+                        <div className="text-xs text-muted-foreground mb-1">Peak/day</div>
                         <div className="text-2xl font-bold">
                           {Math.max(...allTimeActivityData.map((d) => d.sessions), 0)}
                         </div>
                       </div>
                       <div className="flex-1 lg:flex-none">
-                        <div className="text-xs text-muted-foreground mb-1">学習日数</div>
+                        <div className="text-xs text-muted-foreground mb-1">Active days</div>
                         <div className="text-2xl font-bold">{allTimeActivityData.length}</div>
                       </div>
                     </div>
@@ -777,8 +770,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                   <div className="h-[250px] flex items-center justify-center text-muted-foreground">
                     <div className="text-center">
                       <Activity className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                      <p className="text-sm">データがありません</p>
-                      <p className="text-xs mt-1">左下の「モックデータ読込」ボタンでテストデータを生成できます</p>
+                      <p className="text-sm">No data</p>
                     </div>
                   </div>
                 )}
@@ -789,15 +781,15 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
               <CardHeader>
                 <CardTitle className="flex items-center text-sm sm:text-base">
                   <Activity className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                  週間アクティビティ
+                  Weekly activity
                 </CardTitle>
-                <CardDescription className="text-xs sm:text-sm">過去7日間の学習セッション数</CardDescription>
+                <CardDescription className="text-xs sm:text-sm">Last 7 days</CardDescription>
               </CardHeader>
               <CardContent>
                 <ChartContainer
                   config={{
                     sessions: {
-                      label: "セッション数",
+                      label: "Sessions",
                     },
                     "day-1": { color: "hsl(221.2 83.2% 53.3%)" },
                     "day-2": { color: "hsl(217 91% 60%)" },
@@ -821,8 +813,8 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm sm:text-base">最近のセッション履歴</CardTitle>
-                <CardDescription className="text-xs sm:text-sm">直近10セッションの詳細</CardDescription>
+                <CardTitle className="text-sm sm:text-base">Recent sessions</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">Last 10 sessions</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 sm:space-y-3">
@@ -837,7 +829,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                         </div>
                         <div>
                           <p className="font-medium text-xs sm:text-sm">
-                            {new Date(session.date).toLocaleDateString("ja-JP", {
+                            {new Date(session.date).toLocaleDateString("en-US", {
                               month: "short",
                               day: "numeric",
                               hour: "2-digit",
@@ -845,7 +837,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                             })}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            平均回答時間: {(session.averageResponseTime / 1000).toFixed(1)}秒
+                            Avg: {(session.averageResponseTime / 1000).toFixed(1)}s
                           </p>
                         </div>
                       </div>
@@ -867,8 +859,8 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
           <TabsContent value="detailed" className="space-y-4">
             <Card>
                 <CardHeader>
-                  <CardTitle className="text-sm sm:text-base">学習統計サマリー</CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">全体的な学習データ</CardDescription>
+                  <CardTitle className="text-sm sm:text-base">Summary</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">Key metrics</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 gap-6">
@@ -877,7 +869,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                       <ChartContainer
                         config={{
                           sessions: {
-                            label: "セッション",
+                            label: "Sessions",
                             color: "hsl(221.2 83.2% 53.3%)",
                           },
                         }}
@@ -903,15 +895,14 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                           </text>
                         </RadialBarChart>
                       </ChartContainer>
-                      <div className="text-sm text-muted-foreground mt-2">総セッション数</div>
+                      <div className="text-sm text-muted-foreground mt-2">Total sessions</div>
                     </div>
 
-                    {/* 総正解数 */}
                     <div className="flex flex-col items-center">
                       <ChartContainer
                         config={{
                           correct: {
-                            label: "正解",
+                            label: "Correct",
                             color: "hsl(212 95% 68%)",
                           },
                         }}
@@ -937,20 +928,20 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                           </text>
                         </RadialBarChart>
                       </ChartContainer>
-                      <div className="text-sm text-muted-foreground mt-2">総正解数</div>
+                      <div className="text-sm text-muted-foreground mt-2">Correct answers</div>
                     </div>
                   </div>
 
                   <div className="pt-4 border-t mt-4">
-                    <h4 className="font-semibold mb-2 text-sm">学習の推奨事項</h4>
+                    <h4 className="font-semibold mb-2 text-sm">Recommendations</h4>
                     <ul className="text-xs sm:text-sm text-muted-foreground space-y-1">
-                      {stats.averageScore < 70 && <li>• 基礎的なコードトーンの復習をお勧めします</li>}
+                      {stats.averageScore < 70 && <li>• Review basic chord tones</li>}
                       {rootWeaknesses.length > 0 && (
-                        <li>• {rootWeaknesses[0].name}ルートのコードを重点的に練習しましょう</li>
+                        <li>• Focus on {rootWeaknesses[0].name} root chords</li>
                       )}
-                      {stats.averageResponseTime > 5000 && <li>• 回答速度の向上を目指しましょう</li>}
+                      {stats.averageResponseTime > 5000 && <li>• Improve response speed</li>}
                       {weeklyData.filter((d) => d.sessions > 0).length < 3 && (
-                        <li>• 継続的な学習習慣を身につけましょう</li>
+                        <li>• Build consistent practice habits</li>
                       )}
                     </ul>
                   </div>
