@@ -514,9 +514,9 @@ export function MusicPracticeApp({ onExit }: MusicPracticeAppProps) {
 
           {/* 次の問題プレビュー */}
           {questionNumber < 10 && !showResult && (
-            <div className="absolute right-24 top-12 opacity-15 text-right">
-              <div className="text-3xl font-mono">{formatChordName(questions[questionNumber].chord)}</div>
-              <p className="text-xs mt-1">{questions[questionNumber].toneName}</p>
+            <div className="absolute right-2 sm:right-8 lg:right-20 top-4 sm:top-6 lg:top-8 opacity-15 text-right">
+              <div className="text-xl sm:text-2xl lg:text-3xl font-mono">{formatChordName(questions[questionNumber].chord)}</div>
+              <p className="text-[10px] sm:text-xs mt-1">{questions[questionNumber].toneName}</p>
             </div>
           )}
         </div>
