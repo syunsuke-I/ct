@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
@@ -31,7 +30,6 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
   const [stats, setStats] = useState<UserStats | null>(null)
   const [weeklyData, setWeeklyData] = useState<Array<{ date: string; sessions: number }>>([])
   const [heatmapData, setHeatmapData] = useState<ReturnType<typeof getHeatmapData>>([])
-  const [selectedTimeframe, setSelectedTimeframe] = useState<"week" | "month" | "all">("week")
 
   useEffect(() => {
     const loadData = () => {
@@ -230,7 +228,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                 ) : progressTrend < 0 ? (
                   <TrendingDown className="h-3 w-3 mr-1 text-red-500" />
                 ) : null}
-                {progressTrend !== 0 && `${Math.abs(progressTrend > 0 ? '+' : '')}${progressTrend}`}
+                {progressTrend !== 0 && `${progressTrend > 0 ? '+' : ''}${progressTrend.toFixed(1)}`}
               </div>
             </CardContent>
           </Card>
