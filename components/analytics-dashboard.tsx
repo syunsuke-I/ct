@@ -625,13 +625,13 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
               </CardHeader>
               <CardContent>
                 {heatmapData.length > 0 ? (
-                  <div className="w-full overflow-x-auto">
-                    <div className="inline-flex flex-col gap-1">
+                  <div className="w-full overflow-x-auto pb-2">
+                    <div className="inline-flex flex-col gap-0.5 sm:gap-1 min-w-max">
                       {/* 曜日ラベル */}
-                      <div className="flex gap-1">
-                        <div className="w-8 text-xs text-muted-foreground"></div>
+                      <div className="flex gap-0.5 sm:gap-1">
+                        <div className="w-3 sm:w-6 text-[10px] sm:text-xs text-muted-foreground"></div>
                         {/* 週のグリッド */}
-                        <div className="flex gap-1">
+                        <div className="flex gap-0.5 sm:gap-1">
                           {Array.from({ length: 13 }).map((_, weekIndex) => {
                             // 各週の開始日を取得
                             const weekStart = heatmapData[weekIndex * 7]
@@ -641,7 +641,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                             const showMonth = weekIndex === 0 || weekStart.dateObj.getDate() <= 7
 
                             return (
-                              <div key={weekIndex} className="w-[52px] text-xs text-muted-foreground text-center">
+                              <div key={weekIndex} className="w-[18px] sm:w-[40px] text-[9px] sm:text-xs text-muted-foreground text-center">
                                 {showMonth ? monthLabel : ""}
                               </div>
                             )
@@ -651,19 +651,24 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
 
                       {/* カレンダーグリッド */}
                       {[0, 1, 2, 3, 4, 5, 6].map((dayOfWeek) => (
-                        <div key={dayOfWeek} className="flex gap-1">
+                        <div key={dayOfWeek} className="flex gap-0.5 sm:gap-1">
                           {/* 曜日ラベル */}
-                          <div className="w-8 text-xs text-muted-foreground flex items-center">
-                            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][dayOfWeek]}
+                          <div className="w-3 sm:w-6 text-[9px] sm:text-xs text-muted-foreground flex items-center justify-end pr-0.5">
+                            <span className="hidden sm:inline">
+                              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][dayOfWeek]}
+                            </span>
+                            <span className="sm:hidden">
+                              {["S", "M", "T", "W", "T", "F", "S"][dayOfWeek]}
+                            </span>
                           </div>
 
                           {/* 各週のセル */}
-                          <div className="flex gap-1">
+                          <div className="flex gap-0.5 sm:gap-1">
                             {Array.from({ length: 13 }).map((_, weekIndex) => {
                               const dataIndex = weekIndex * 7 + dayOfWeek
                               const dayData = heatmapData[dataIndex]
 
-                              if (!dayData) return <div key={weekIndex} className="w-3 h-3 sm:w-4 sm:h-4" />
+                              if (!dayData) return <div key={weekIndex} className="w-2 h-2 sm:w-3 sm:h-3" />
 
                               // セッション数に応じて色の濃さを決定
                               let bgColor = "bg-muted"
@@ -675,8 +680,8 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                               return (
                                 <div
                                   key={weekIndex}
-                                  className={`w-3 h-3 sm:w-4 sm:h-4 rounded-sm ${bgColor} cursor-pointer hover:ring-2 hover:ring-primary transition-all`}
-                                  title={`${dayData.date}\n${dayData.sessions}セッション\n正答率: ${dayData.accuracy.toFixed(1)}%`}
+                                  className={`w-2 h-2 sm:w-3 sm:h-3 rounded-[1px] sm:rounded-sm ${bgColor} cursor-pointer hover:ring-1 sm:hover:ring-2 hover:ring-primary transition-all`}
+                                  title={`${dayData.date}\n${dayData.sessions} sessions\n${dayData.accuracy.toFixed(1)}%`}
                                 />
                               )
                             })}
@@ -685,13 +690,13 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
                       ))}
 
                       {/* 凡例 */}
-                      <div className="flex items-center gap-2 mt-4 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1 sm:gap-2 mt-2 sm:mt-4 text-[10px] sm:text-xs text-muted-foreground">
                         <span>Less</span>
-                        <div className="w-3 h-3 bg-muted rounded-sm" />
-                        <div className="w-3 h-3 bg-blue-300 rounded-sm" />
-                        <div className="w-3 h-3 bg-blue-400 rounded-sm" />
-                        <div className="w-3 h-3 bg-blue-500 rounded-sm" />
-                        <div className="w-3 h-3 bg-blue-600 rounded-sm" />
+                        <div className="w-2 h-2 sm:w-3 sm:h-3 bg-muted rounded-[1px] sm:rounded-sm" />
+                        <div className="w-2 h-2 sm:w-3 sm:h-3 bg-blue-300 rounded-[1px] sm:rounded-sm" />
+                        <div className="w-2 h-2 sm:w-3 sm:h-3 bg-blue-400 rounded-[1px] sm:rounded-sm" />
+                        <div className="w-2 h-2 sm:w-3 sm:h-3 bg-blue-500 rounded-[1px] sm:rounded-sm" />
+                        <div className="w-2 h-2 sm:w-3 sm:h-3 bg-blue-600 rounded-[1px] sm:rounded-sm" />
                         <span>More</span>
                       </div>
                     </div>
