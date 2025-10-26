@@ -425,6 +425,10 @@ export const generateMockData = (): UserStats => {
 }
 
 export const loadMockData = () => {
+  if (process.env.NODE_ENV !== "development") {
+    console.warn("⚠️ モックデータの読み込みは開発環境でのみ利用可能です")
+    return null
+  }
   const mockData = generateMockData()
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(mockData))
@@ -437,6 +441,10 @@ export const loadMockData = () => {
 }
 
 export const clearAllData = () => {
+  if (process.env.NODE_ENV !== "development") {
+    console.warn("⚠️ データクリアは開発環境でのみ利用可能です")
+    return
+  }
   try {
     localStorage.removeItem(STORAGE_KEY)
     console.log("✅ 全データをクリアしました")

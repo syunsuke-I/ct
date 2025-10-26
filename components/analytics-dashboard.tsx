@@ -188,6 +188,10 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
   })()
 
   const handleLoadMockData = () => {
+    if (process.env.NODE_ENV !== "development") {
+      console.warn("モックデータの読み込みは開発環境でのみ利用可能です")
+      return
+    }
     const result = loadMockData()
     console.log("Generated mock data:", result)
     console.log("Total sessions:", result?.totalSessions)
@@ -196,6 +200,10 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
   }
 
   const handleClearData = () => {
+    if (process.env.NODE_ENV !== "development") {
+      console.warn("データクリアは開発環境でのみ利用可能です")
+      return
+    }
     if (confirm("全データをクリアしますか？")) {
       clearAllData()
       window.location.reload()
@@ -217,15 +225,17 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
         </Button>
       )}
 
-      {/* デバッグボタン */}
-      <div className="fixed bottom-4 left-4 z-10 flex gap-2">
-        <Button variant="outline" size="sm" onClick={handleLoadMockData}>
-          モックデータ読込
-        </Button>
-        <Button variant="outline" size="sm" onClick={handleClearData}>
-          データクリア
-        </Button>
-      </div>
+      {/* デバッグボタン（開発環境のみ） */}
+      {process.env.NODE_ENV === "development" && (
+        <div className="fixed bottom-4 left-4 z-10 flex gap-2">
+          <Button variant="outline" size="sm" onClick={handleLoadMockData}>
+            モックデータ読込
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleClearData}>
+            データクリア
+          </Button>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
         {/* ヘッダー */}
