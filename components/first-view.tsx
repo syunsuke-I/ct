@@ -10,33 +10,44 @@ interface FirstViewProps {
 export function FirstView({ onSelectView }: FirstViewProps) {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-      <div className="w-full max-w-md space-y-12">
+      <div className="w-full max-w-2xl space-y-16">
         {/* ヘッダー */}
-        <div className="text-center">
-          <h1 className="text-2xl font-semibold tracking-tight">Code Tone Lesson</h1>
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-semibold tracking-tight">Chord Tone Practice</h1>
+          <p className="text-sm text-muted-foreground">Select an option to begin</p>
         </div>
 
         {/* メニューオプション */}
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {/* 練習を開始 */}
           <Card
             onClick={() => onSelectView("practice")}
-            className="cursor-pointer transition-all hover:bg-muted/50 active:scale-[0.98]"
+            className="cursor-pointer transition-all duration-200 hover:bg-muted/50 active:scale-[0.97] border-0 bg-muted/30"
           >
-            <div className="p-6 flex items-center gap-4">
-              <Music className="w-5 h-5 text-foreground" />
-              <h2 className="text-lg font-medium">Start</h2>
+            <div className="p-12 flex flex-col items-center justify-center gap-6 text-center">
+              <div className="w-16 h-16 rounded-full bg-background flex items-center justify-center">
+                <Music className="w-8 h-8 text-foreground" />
+              </div>
+              <div className="space-y-1">
+                <h2 className="text-lg font-medium">Practice</h2>
+                <p className="text-xs text-muted-foreground">Start training</p>
+              </div>
             </div>
           </Card>
 
           {/* アナリティクスを見る */}
           <Card
             onClick={() => onSelectView("analytics")}
-            className="cursor-pointer transition-all hover:bg-muted/50 active:scale-[0.98]"
+            className="cursor-pointer transition-all duration-200 hover:bg-muted/50 active:scale-[0.97] border-0 bg-muted/30"
           >
-            <div className="p-6 flex items-center gap-4">
-              <BarChart3 className="w-5 h-5 text-foreground" />
-              <h2 className="text-lg font-medium">Show analytics</h2>
+            <div className="p-12 flex flex-col items-center justify-center gap-6 text-center">
+              <div className="w-16 h-16 rounded-full bg-background flex items-center justify-center">
+                <BarChart3 className="w-8 h-8 text-foreground" />
+              </div>
+              <div className="space-y-1">
+                <h2 className="text-lg font-medium">Analytics</h2>
+                <p className="text-xs text-muted-foreground">View progress</p>
+              </div>
             </div>
           </Card>
         </div>

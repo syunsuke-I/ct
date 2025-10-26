@@ -7,8 +7,8 @@ import { Menu, X, BarChart3, Play, Settings, HelpCircle, Trophy, TrendingUp, Cal
 import { getStoredData, getWeeklyActivityData } from "@/lib/storage"
 
 interface FloatingMenuProps {
-  currentView: "practice" | "analytics"
-  onViewChange: (view: "practice" | "analytics") => void
+  currentView: "practice" | "analytics" | "settings"
+  onViewChange: (view: "practice" | "analytics" | "settings") => void
 }
 
 export function FloatingMenu({ currentView, onViewChange }: FloatingMenuProps) {
@@ -60,30 +60,26 @@ export function FloatingMenu({ currentView, onViewChange }: FloatingMenuProps) {
   const menuItems = [
     {
       id: "practice",
-      label: "練習モード",
+      label: "Practice",
       icon: Play,
-      description: "コードトーンクイズを開始",
-      color: "text-blue-600",
-      bgColor: "bg-blue-50 hover:bg-blue-100",
+      description: "Start chord tone quiz",
     },
     {
       id: "analytics",
-      label: "アナリティクス",
+      label: "Analytics",
       icon: BarChart3,
-      description: "学習データと進歩を確認",
-      color: "text-green-600",
-      bgColor: "bg-green-50 hover:bg-green-100",
+      description: "View learning data & progress",
     },
   ]
 
   const quickStats = [
-    { icon: Trophy, label: "今日のベスト", value: `${stats.todayBest}%` },
-    { icon: TrendingUp, label: "週間平均", value: `${stats.weeklyAverage}%` },
-    { icon: Calendar, label: "学習日数", value: `${stats.learningDays}日` },
-    { icon: Target, label: "総正答率", value: `${stats.totalAccuracy}%` },
+    { icon: Trophy, label: "Today's best", value: `${stats.todayBest}%` },
+    { icon: TrendingUp, label: "Weekly avg", value: `${stats.weeklyAverage}%` },
+    { icon: Calendar, label: "Active days", value: `${stats.learningDays}` },
+    { icon: Target, label: "Total accuracy", value: `${stats.totalAccuracy}%` },
   ]
 
-  const handleMenuItemClick = (viewId: "practice" | "analytics") => {
+  const handleMenuItemClick = (viewId: "practice" | "analytics" | "settings") => {
     onViewChange(viewId)
     setIsOpen(false)
   }
@@ -118,8 +114,8 @@ export function FloatingMenu({ currentView, onViewChange }: FloatingMenuProps) {
         <Card className="w-72 sm:w-80 p-4 sm:p-6 shadow-xl border-0 bg-white/95 backdrop-blur-md max-h-[80vh] overflow-y-auto">
           {/* ヘッダー */}
           <div className="mb-4 sm:mb-6">
-            <h3 className="text-base sm:text-lg font-semibold mb-1">音楽練習アプリ</h3>
-            <p className="text-xs sm:text-sm text-muted-foreground">学習メニューを選択してください</p>
+            <h3 className="text-base sm:text-lg font-semibold mb-1">Music Practice</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground">Select a menu option</p>
           </div>
 
           {/* メインメニュー */}
@@ -134,22 +130,22 @@ export function FloatingMenu({ currentView, onViewChange }: FloatingMenuProps) {
                   variant="ghost"
                   onClick={() => handleMenuItemClick(item.id as "practice" | "analytics")}
                   className={`w-full h-auto p-3 sm:p-4 justify-start ${
-                    isActive ? "bg-primary/10 border-primary/20 border" : item.bgColor
+                    isActive ? "bg-muted" : ""
                   } transition-all duration-200`}
                 >
                   <div className="flex items-center space-x-2 sm:space-x-3 w-full">
                     <div
                       className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg ${
-                        isActive ? "bg-primary/20" : "bg-white"
+                        isActive ? "bg-muted" : "bg-muted/50"
                       } flex items-center justify-center`}
                     >
-                      <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${isActive ? "text-primary" : item.color}`} />
+                      <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${isActive ? "text-foreground" : "text-muted-foreground"}`} />
                     </div>
                     <div className="flex-1 text-left">
                       <div className="font-medium text-xs sm:text-sm">{item.label}</div>
                       <div className="text-xs text-muted-foreground hidden sm:block">{item.description}</div>
                     </div>
-                    {isActive && <div className="w-2 h-2 rounded-full bg-primary"></div>}
+                    {isActive && <div className="w-2 h-2 rounded-full bg-foreground"></div>}
                   </div>
                 </Button>
               )
@@ -158,7 +154,7 @@ export function FloatingMenu({ currentView, onViewChange }: FloatingMenuProps) {
 
           {/* クイック統計 */}
           <div className="border-t pt-3 sm:pt-4">
-            <h4 className="text-xs sm:text-sm font-medium mb-2 sm:mb-3 text-muted-foreground">クイック統計</h4>
+            <h4 className="text-xs sm:text-sm font-medium mb-2 sm:mb-3 text-muted-foreground">Quick stats</h4>
             <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
               {quickStats.map((stat, index) => {
                 const Icon = stat.icon
@@ -175,16 +171,15 @@ export function FloatingMenu({ currentView, onViewChange }: FloatingMenuProps) {
 
           {/* フッター */}
           <div className="border-t pt-3 sm:pt-4 mt-3 sm:mt-4">
-            <div className="flex items-center justify-between">
-              <Button variant="ghost" size="sm" className="text-xs">
-                <Settings className="w-3 h-3 mr-1" />
-                設定
-              </Button>
-              <Button variant="ghost" size="sm" className="text-xs">
-                <HelpCircle className="w-3 h-3 mr-1" />
-                ヘルプ
-              </Button>
-            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full text-xs justify-start"
+              onClick={() => handleMenuItemClick("settings")}
+            >
+              <Settings className="w-3 h-3 mr-1" />
+              Settings
+            </Button>
           </div>
         </Card>
       </div>

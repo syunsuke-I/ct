@@ -198,13 +198,13 @@ export function MusicPracticeApp({ onExit }: MusicPracticeAppProps) {
 
     if (isCorrect) {
       setScore(score + 1)
-      toast.success("正解！", {
-        description: `${currentQuestion.chord}の${currentQuestion.toneName}は${currentQuestion.answer}です`,
+      toast.success("Correct!", {
+        description: `${currentQuestion.toneName} of ${currentQuestion.chord} is ${currentQuestion.answer}`,
         duration: 2000,
       })
     } else {
-      toast.error("不正解", {
-        description: `正解は${currentQuestion.answer}でした`,
+      toast.error("Wrong", {
+        description: `Correct answer: ${currentQuestion.answer}`,
         duration: 2000,
         style: {
           background: "hsl(var(--destructive))",
@@ -282,10 +282,10 @@ export function MusicPracticeApp({ onExit }: MusicPracticeAppProps) {
   const getAdvice = () => {
     const percentage = (score / 10) * 100
 
-    if (percentage >= 90) return "素晴らしい！コードトーンの理解が深まっています。"
-    if (percentage >= 70) return "良い調子です！継続して練習を続けましょう。"
-    if (percentage >= 50) return "基礎は身についています。苦手な部分を重点的に練習しましょう。"
-    return "基礎から復習することをお勧めします。焦らず一歩ずつ進めましょう。"
+    if (percentage >= 90) return "Excellent! Your understanding of chord tones is improving."
+    if (percentage >= 70) return "Good work! Keep practicing consistently."
+    if (percentage >= 50) return "You have the basics. Focus on your weak areas."
+    return "Review the fundamentals. Take it one step at a time."
   }
 
   // リアルタイム経過時間更新
@@ -311,65 +311,75 @@ export function MusicPracticeApp({ onExit }: MusicPracticeAppProps) {
     const advice = getAdvice()
 
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card className="w-full max-w-2xl p-8 animate-scale-in">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+        <Card className="w-full max-w-3xl p-12 animate-scale-in border-0 bg-muted/30">
           {/* ヘッダー部分 */}
-          <div className="text-center mb-8">
-            <Trophy className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-2xl font-semibold mb-2 text-balance">セッション完了！</h2>
-            <p className="text-muted-foreground">10問中{score}問正解</p>
+          <div className="text-center mb-12">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-background flex items-center justify-center">
+              <Trophy className="w-10 h-10 text-foreground" />
+            </div>
+            <h2 className="text-3xl font-semibold mb-3 text-balance">Session Complete</h2>
+            <p className="text-muted-foreground">{score} out of 10 correct</p>
           </div>
 
           {/* スコア表示 */}
-          <div className="mb-8 text-center">
-            <div className="text-4xl font-bold mb-2">{Math.round((score / 10) * 100)}%</div>
-            <Progress value={(score / 10) * 100} className="h-3 mb-4" />
-            <p className="text-sm text-muted-foreground">{advice}</p>
-            <div className="mt-4 text-sm text-muted-foreground">
-              <p>平均回答時間: {(stats.timing.average / 1000).toFixed(1)}秒</p>
-              <p>
-                最速: {(stats.timing.fastest / 1000).toFixed(1)}秒 | 最遅: {(stats.timing.slowest / 1000).toFixed(1)}秒
-              </p>
+          <div className="mb-12 text-center">
+            <div className="text-6xl font-bold mb-4">{Math.round((score / 10) * 100)}%</div>
+            <Progress value={(score / 10) * 100} className="h-3 mb-6" />
+            <p className="text-sm text-muted-foreground mb-8">{advice}</p>
+            <div className="flex items-center justify-center gap-8 text-sm text-muted-foreground">
+              <div className="text-center">
+                <div className="font-mono font-semibold text-foreground">{(stats.timing.average / 1000).toFixed(1)}s</div>
+                <div>Avg time</div>
+              </div>
+              <div className="text-center">
+                <div className="font-mono font-semibold text-foreground">{(stats.timing.fastest / 1000).toFixed(1)}s</div>
+                <div>Fastest</div>
+              </div>
+              <div className="text-center">
+                <div className="font-mono font-semibold text-foreground">{(stats.timing.slowest / 1000).toFixed(1)}s</div>
+                <div>Slowest</div>
+              </div>
             </div>
           </div>
 
           {/* 詳細統計 */}
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
+          <div className="grid md:grid-cols-2 gap-8 mb-12">
             {/* コードタイプ別統計 */}
-            <div>
-              <h3 className="font-semibold mb-3 flex items-center">
+            <div className="bg-background/50 rounded-lg p-6">
+              <h3 className="font-semibold mb-4 flex items-center text-sm">
                 <TrendingUp className="w-4 h-4 mr-2" />
-                コードタイプ別成績
+                By chord type
               </h3>
-              <div className="space-y-2 text-sm">
+              <div className="space-y-3 text-sm">
                 {stats.chordTypes.major.total > 0 && (
                   <div className="flex justify-between">
-                    <span>メジャーコード</span>
-                    <span>
+                    <span className="text-muted-foreground">Major</span>
+                    <span className="font-mono font-semibold">
                       {stats.chordTypes.major.correct}/{stats.chordTypes.major.total}
                     </span>
                   </div>
                 )}
                 {stats.chordTypes.minor.total > 0 && (
                   <div className="flex justify-between">
-                    <span>マイナーコード</span>
-                    <span>
+                    <span className="text-muted-foreground">Minor</span>
+                    <span className="font-mono font-semibold">
                       {stats.chordTypes.minor.correct}/{stats.chordTypes.minor.total}
                     </span>
                   </div>
                 )}
                 {stats.chordTypes.seventh.total > 0 && (
                   <div className="flex justify-between">
-                    <span>セブンスコード</span>
-                    <span>
+                    <span className="text-muted-foreground">Seventh</span>
+                    <span className="font-mono font-semibold">
                       {stats.chordTypes.seventh.correct}/{stats.chordTypes.seventh.total}
                     </span>
                   </div>
                 )}
                 {stats.chordTypes.m7b5.total > 0 && (
                   <div className="flex justify-between">
-                    <span>m7-5コード</span>
-                    <span>
+                    <span className="text-muted-foreground">m7-5</span>
+                    <span className="font-mono font-semibold">
                       {stats.chordTypes.m7b5.correct}/{stats.chordTypes.m7b5.total}
                     </span>
                   </div>
@@ -378,32 +388,32 @@ export function MusicPracticeApp({ onExit }: MusicPracticeAppProps) {
             </div>
 
             {/* 音程別統計 */}
-            <div>
-              <h3 className="font-semibold mb-3 flex items-center">
+            <div className="bg-background/50 rounded-lg p-6">
+              <h3 className="font-semibold mb-4 flex items-center text-sm">
                 <Music className="w-4 h-4 mr-2" />
-                音程別成績
+                By interval
               </h3>
-              <div className="space-y-2 text-sm">
+              <div className="space-y-3 text-sm">
                 {stats.intervals.third.total > 0 && (
                   <div className="flex justify-between">
-                    <span>3rd</span>
-                    <span>
+                    <span className="text-muted-foreground">3rd</span>
+                    <span className="font-mono font-semibold">
                       {stats.intervals.third.correct}/{stats.intervals.third.total}
                     </span>
                   </div>
                 )}
                 {stats.intervals.fifth.total > 0 && (
                   <div className="flex justify-between">
-                    <span>5th</span>
-                    <span>
+                    <span className="text-muted-foreground">5th</span>
+                    <span className="font-mono font-semibold">
                       {stats.intervals.fifth.correct}/{stats.intervals.fifth.total}
                     </span>
                   </div>
                 )}
                 {stats.intervals.seventh.total > 0 && (
                   <div className="flex justify-between">
-                    <span>7th</span>
-                    <span>
+                    <span className="text-muted-foreground">7th</span>
+                    <span className="font-mono font-semibold">
                       {stats.intervals.seventh.correct}/{stats.intervals.seventh.total}
                     </span>
                   </div>
@@ -415,21 +425,21 @@ export function MusicPracticeApp({ onExit }: MusicPracticeAppProps) {
           {/* 間違えた問題の詳細 */}
           {stats.incorrectAnswers.length > 0 && (
             <div className="mb-8">
-              <h3 className="font-semibold mb-3 flex items-center">
+              <h3 className="font-semibold mb-4 flex items-center text-sm">
                 <AlertCircle className="w-4 h-4 mr-2" />
-                復習が必要な問題
+                Review needed
               </h3>
               <div className="space-y-2">
                 {stats.incorrectAnswers.map((result, index) => (
-                  <div key={index} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg text-sm">
+                  <div key={index} className="flex justify-between items-center p-4 bg-background/50 rounded-lg text-sm">
                     <div>
-                      <span className="font-mono font-semibold">{formatChordName(result.question.chord)}</span>
-                      <span className="text-muted-foreground ml-2">の{result.question.toneName}</span>
-                      <span className="text-muted-foreground ml-2">({(result.responseTime / 1000).toFixed(1)}秒)</span>
+                      <span className="font-mono font-semibold text-base">{formatChordName(result.question.chord)}</span>
+                      <span className="text-muted-foreground ml-3">{result.question.toneName}</span>
+                      <span className="text-muted-foreground ml-3">({(result.responseTime / 1000).toFixed(1)}s)</span>
                     </div>
-                    <div className="text-right font-mono">
-                      <div className="text-red-600">あなたの回答: {formatChordName(result.userAnswer)}</div>
-                      <div className="text-green-600">正解: {formatChordName(result.question.answer)}</div>
+                    <div className="text-right font-mono text-xs space-y-1">
+                      <div className="text-muted-foreground">Your: {formatChordName(result.userAnswer)}</div>
+                      <div className="text-foreground font-semibold">Correct: {formatChordName(result.question.answer)}</div>
                     </div>
                   </div>
                 ))}
@@ -437,9 +447,9 @@ export function MusicPracticeApp({ onExit }: MusicPracticeAppProps) {
             </div>
           )}
 
-          <Button onClick={startNewSession} className="w-full" size="lg">
-            <RotateCcw className="w-4 h-4 mr-2" />
-            もう一度練習する
+          <Button onClick={startNewSession} className="w-full h-14 text-base" size="lg">
+            <RotateCcw className="w-5 h-5 mr-2" />
+            Practice again
           </Button>
         </Card>
         <Toaster />
@@ -458,43 +468,37 @@ export function MusicPracticeApp({ onExit }: MusicPracticeAppProps) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="w-full max-w-lg p-8 animate-fade-in relative">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+      <Card className="w-full max-w-2xl p-12 animate-fade-in relative border-0 bg-muted/30">
         {/* 中断ボタン */}
         {onExit && (
           <Button
             variant="ghost"
             size="icon"
             onClick={onExit}
-            className="absolute top-4 right-4 w-8 h-8"
-            aria-label="中断"
+            className="absolute top-4 right-4 w-10 h-10"
+            aria-label="Exit"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </Button>
         )}
 
         {/* ヘッダー */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <Music className="w-6 h-6 mr-2 text-muted-foreground" />
-            <h1 className="text-xl font-semibold">コードトーン練習</h1>
+        <div className="mb-12">
+          <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
+            <span>Question {questionNumber}/10</span>
+            <span>Score: {score}/10</span>
           </div>
 
-          <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-            <span>問題 {questionNumber}/10</span>
-            <span>正解数: {score}</span>
-          </div>
-
-          <Progress value={((questionNumber - 1) / 10) * 100} className="h-1" />
+          <Progress value={((questionNumber - 1) / 10) * 100} className="h-2" />
         </div>
 
         {/* 問題 */}
-        <div className="mb-8 relative">
-          {/* 現在の問題（中央） */}
-          <div className="text-center">
-            <div className="mb-6">
-              <div className="text-4xl font-bold mb-2 font-mono">{formatChordName(currentQuestion.chord)}</div>
-              <p className="text-lg text-muted-foreground">の{currentQuestion.toneName}は？</p>
+        <div className="mb-12 relative">
+          <div className="text-center space-y-8">
+            <div className="space-y-4">
+              <div className="text-6xl font-bold font-mono">{formatChordName(currentQuestion.chord)}</div>
+              <p className="text-lg text-muted-foreground">What is the {currentQuestion.toneName}?</p>
             </div>
 
             {/* 時間表示 */}
@@ -502,35 +506,35 @@ export function MusicPracticeApp({ onExit }: MusicPracticeAppProps) {
               <Clock className="w-4 h-4 text-muted-foreground" />
               <span className={`font-mono ${showResult ? "text-muted-foreground" : "text-foreground font-semibold"}`}>
                 {showResult && answeredTime !== null
-                  ? `${(answeredTime / 1000).toFixed(1)}秒`
-                  : `${(elapsedTime / 1000).toFixed(1)}秒`}
+                  ? `${(answeredTime / 1000).toFixed(1)}s`
+                  : `${(elapsedTime / 1000).toFixed(1)}s`}
               </span>
             </div>
           </div>
 
-          {/* 次の問題プレビュー（右側・薄く） */}
+          {/* 次の問題プレビュー */}
           {questionNumber < 10 && !showResult && (
-            <div className="absolute right-16 top-8 opacity-25 text-right">
-              <div className="text-lg font-mono">{formatChordName(questions[questionNumber].chord)}</div>
-              <p className="text-xs">{questions[questionNumber].toneName}</p>
+            <div className="absolute right-24 top-12 opacity-15 text-right">
+              <div className="text-3xl font-mono">{formatChordName(questions[questionNumber].chord)}</div>
+              <p className="text-xs mt-1">{questions[questionNumber].toneName}</p>
             </div>
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-4">
           {currentQuestion.options.map((option) => (
             <Button
               key={option}
-              variant={selectedAnswer === option ? "default" : "outline"}
+              variant="outline"
               size="lg"
               onClick={() => checkAnswer(option)}
               disabled={showResult}
-              className={`h-16 text-lg font-mono transition-all duration-200 ${
+              className={`h-20 text-2xl font-mono transition-all duration-200 border-2 ${
                 showResult && option === currentQuestion.answer
-                  ? "bg-green-100 text-green-800 border-green-300 hover:bg-green-100"
+                  ? "bg-foreground text-background border-foreground hover:bg-foreground"
                   : showResult && selectedAnswer === option && option !== currentQuestion.answer
-                    ? "bg-red-100 text-red-800 border-red-300 hover:bg-red-100"
-                    : ""
+                    ? "bg-muted text-muted-foreground border-muted-foreground/20 hover:bg-muted"
+                    : "hover:bg-muted/50"
               }`}
             >
               {formatChordName(option)}
@@ -540,8 +544,8 @@ export function MusicPracticeApp({ onExit }: MusicPracticeAppProps) {
 
         {/* 結果表示 */}
         {showResult && (
-          <div className="text-center mt-4">
-            <div className="text-sm text-muted-foreground">次の問題まで...</div>
+          <div className="text-center mt-6">
+            <div className="text-xs text-muted-foreground">Next question...</div>
           </div>
         )}
       </Card>
