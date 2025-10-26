@@ -63,11 +63,11 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
   }
 
   // 最近のセッションデータを取得
-  const recentSessions = stats.sessions.slice(-10).reverse()
+  const recentSessions = stats.sessions.slice(-10)
 
   // 進歩の傾向を計算
   const progressTrend =
-    recentSessions.length >= 2 ? recentSessions[0].score - recentSessions[recentSessions.length - 1].score : 0
+    recentSessions.length >= 2 ? recentSessions[recentSessions.length - 1].score - recentSessions[0].score : 0
 
   const calculateLearningStreak = () => {
     if (stats.sessions.length === 0) return 0
@@ -851,7 +851,7 @@ export function AnalyticsDashboard({ onExit }: AnalyticsDashboardProps) {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 sm:space-y-3">
-                  {recentSessions.map((session, index) => (
+                  {recentSessions.slice().reverse().map((session, index) => (
                     <div
                       key={session.id}
                       className="flex items-center justify-between p-2 sm:p-3 bg-muted/50 rounded-lg"
